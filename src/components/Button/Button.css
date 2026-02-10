@@ -1,0 +1,40 @@
+.btn {
+  background: transparent;
+  color: var(--text-main);
+  display: flex;
+  padding: 0.5em 1.2em;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5em;
+  border: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  color: var(--disabled);
+}
+
+.btn:hover {
+  color: var(--accent);
+}
+
+.btn:disabled:hover {
+  color: var(--disabled);
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.btn:disabled:active {
+  transform: none;
+}
+
+.btn:focus-visible {
+  outline: 3px solid rgba(124, 58, 237, 0.4);
+  outline-offset: 2px;
+}
