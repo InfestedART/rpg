@@ -1,19 +1,16 @@
 // import { useState } from 'react'
 import './App.css'
-import Button from './components/Button';
+import { Routes, Route } from 'react-router-dom';
+import TitleScreen from './pages/TitleScreen/TitleScreen'
+import NewChar from './pages/NewChar/NewChar'
 
 function App() {
-
   return (
-    <>
-      <div className='title-container'>
-        <h1>RPG GAME</h1>
-      </div>
-      <div className="panel">
-        <Button onClick={() => console.log('click')}> New Character </Button>
-        <Button disabled onClick={() => console.log('click')}> Load Character </Button>
-      </div>
-    </>
+    <Routes>
+      <Route path='*' element={<TitleScreen />} />
+      <Route path='/newChar' element={<NewChar />} />
+      {/*<Route path="*" element={<NotFound />} /> */}
+    </Routes>    
   )
 }
 
