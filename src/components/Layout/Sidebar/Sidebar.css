@@ -1,0 +1,5 @@
+.sidebar {
+    background-color: var(--bg-panel);
+    color: var(--text-main);
+    flex-direction: column;
+}

@@ -1,0 +1,12 @@
+.navbar {
+    background-color: var(--bg-panel);
+    color: var(--text-main);
+    flex-direction: row;
+}
+
+.navbar-container {
+    margin: auto;
+    width: var(--container-width, 1280px);
+    display: flex;
+    justify-content: space-between;
+}
