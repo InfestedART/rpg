@@ -1,14 +1,16 @@
 import './Layout.css';
+
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import Navbar from './Navbar';
-import type { NavbarButton } from './Navbar/Navbar';
 import { useNavigate } from "react-router-dom";
+import { faHome } from '@fortawesome/free-solid-svg-icons';
+
+import Navbar from './Navbar';
 import Sidebar from './Sidebar';
+import type { NavbarButton } from './Navbar/Navbar';
 import type { SidebarButton } from './Sidebar/Sidebar';
 
-type LayoutProps = {
-}
+type LayoutProps = {}
 
 const Layout = (props: LayoutProps) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -17,7 +19,9 @@ const Layout = (props: LayoutProps) => {
     const navbarButtons: NavbarButton[] = [
       {
         label: 'HOME',
-        action: () => navigate('/')
+        action: () => navigate('/'),
+        icon: faHome,
+        iconPosition: 'left'
       }
     ];
 

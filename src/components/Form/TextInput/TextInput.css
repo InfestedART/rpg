@@ -1,0 +1,9 @@
+.text-input {
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.text-input__input {
+    padding: 0.4rem 0.75rem;
+}

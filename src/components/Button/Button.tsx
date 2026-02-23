@@ -1,25 +1,70 @@
-import "./Button.css"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import "./Button.css";
+import clsx from 'clsx';
 
-export type ButtonProps = {
-  children: React.ReactNode
-  className?: string;
-  onClick: () => void;
-  disabled?: boolean;
-}
+type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+type IconPosition = 'left' | 'right';
+type ButtonSize = 'sm' | 'md' | 'lg';
 
-const Button = ({
-  children,
-  className = '',
-  onClick,
-  disabled = false
-}: ButtonProps) => {
+export type ButtonProps =
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    variant?: ButtonVariant
+    icon?: IconDefinition
+    iconPosition?: IconPosition
+    size?: ButtonSize
+  }
+
+const Button = (props: ButtonProps) => {
+  const {
+    children,
+    className = '',
+    onClick,
+    type = 'button',
+    disabled = false,
+    variant = 'ghost',
+    icon,
+    iconPosition,
+    size = 'md',
+    ...rest
+  } = props;
+
+  const isIconOnly = icon && !children
+  const isIconLeft = icon && iconPosition === 'left'
+  const isIconRight = icon && iconPosition === 'right'
+
   return (
       <button
-        className={`btn ${className}`}
+        type={type}
+        className={
+          clsx(
+            'btn',
+            `btn--${size}`,
+            `btn--${variant}`,
+            { 'btn--icon-only': isIconOnly },
+            className
+          )}
         onClick={onClick}
         disabled={disabled}
+        { ...rest }
       >
-        {children}
+        {isIconLeft && (
+          <FontAwesomeIcon icon={icon} />
+        )}
+
+        {children && (
+          <span className={clsx(
+            'btn__label',
+            { 'icon-left': isIconLeft },
+            { 'icon-right': isIconRight },
+          )}>
+            {children}
+          </span>
+        )}
+
+        { isIconRight && (
+          <FontAwesomeIcon icon={icon} />
+        )}
       </button>
   )
 }

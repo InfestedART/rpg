@@ -1,9 +1,14 @@
 import './Navbar.css';
 import Button from "../../Button";
+import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
+
+type IconPosition = 'left' | 'right';
 
 export type NavbarButton = {
   label: string;
   action: () => void;
+  icon?: IconDefinition;
+  iconPosition?: IconPosition;
 }
 
 type NavbarProps = {
@@ -17,11 +22,14 @@ const Navbar = ({navButtons, sidebarAction}: NavbarProps) => {
       <div className='navbar-container'>
         <div className="left-side">
           {navButtons.map((btn: NavbarButton) => (
-            <>
-              <Button onClick={btn.action} key={btn.label}>
-                {btn.label}
-              </Button>
-            </>
+            <Button
+              onClick={btn.action}
+              key={btn.label}
+              icon={btn.icon}
+              iconPosition={btn.iconPosition}
+            >
+              {btn.label}
+            </Button>
           ))}
         </div>
         <div className="right-side">

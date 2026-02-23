@@ -1,5 +1,5 @@
 .navbar {
-    background-color: var(--bg-panel);
+    background-color: var(--bg-navbar);
     color: var(--text-main);
     flex-direction: row;
 }

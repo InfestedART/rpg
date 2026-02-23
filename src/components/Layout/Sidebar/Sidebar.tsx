@@ -27,13 +27,13 @@ const Sidebar = ({sidebarBtns, closeSidebar, isOpen}: SidebarProps) => {
       <div className="p-4">
         <Button
           onClick={() => closeSidebar()}
-          className="btn-close m-0 text-xs p-0"
+          className="btn--close m-0 text-xs p-0"
         >
           X
         </Button>
           {
             sidebarBtns.map((btn: SidebarButton) => (
-                <Button onClick={btn.action}>{btn.label}</Button>
+                <Button key={btn.label} onClick={btn.action}>{btn.label}</Button>
             ))
           }
       </div>

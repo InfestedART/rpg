@@ -17,14 +17,14 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 
   /* variables */
-  /* --bg-main: #070b18; */
-  --bg-main: #0b1525;
-  --bg-panel: #242833;
-  --bg-sidebar: #353944;
+  --bg-main: #070d1d;
+  --bg-secondary: #161e38;
+  --bg-navbar: #2f3038;
+  --bg-panel: #3a3f46;
   --text-main: #E6EDF3;
-  --alt-hover: #e20a0a;
-  --accent: #9D7CFF;
-  --accent-hover: #7e5edf;
+  --text-warning: #e20a0a;
+  --text-accent: #9D7CFF;
+  --bg-accent: #7049e6;
   --disabled: #6b7280;
 
   --container-width: 1200px;
