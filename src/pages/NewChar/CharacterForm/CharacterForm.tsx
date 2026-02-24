@@ -11,11 +11,26 @@ import { useState } from "react";
 
 type CharacterFormData = z.infer<typeof characterSchema>
 
-const NewCharStats = () => {
+const submitData = async (data: CharacterFormData) => {
+  const response = await fetch('http://localhost:3001/characters', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to save character')
+  }
+}
+
+const CharacterForm = () => {
   const [charClass, setCharClass] = useState<CharClassType>('soldier')
 
   const onSubmit = (data: CharacterFormData) => {
     console.log("==> Valid character:", data)
+    submitData(data);
   };
 
   const equipmentOptions =
@@ -52,4 +67,4 @@ const NewCharStats = () => {
 
 };
 
-export default NewCharStats;
+export default CharacterForm;

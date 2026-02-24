@@ -36,7 +36,7 @@ export const CLASS_OPTIONS = [
   ranger: [
     { value: 'bow_arrows', label: 'Bow and Arrows' },
     { value: 'dual_daggers', label: 'Dual daggers' },
-    { value: 'trowing_knives', label: 'Trowing Knives' },
+    { value: 'trowing_knives', label: 'Throwing Knives' },
   ],
   warrior: [
     { value: 'sword_rapier', label: 'Sword and Rapier' },
