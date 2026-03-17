@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import TitleScreen from './pages/TitleScreen/TitleScreen'
 import NewChar from './pages/NewChar/NewChar'
 import Layout from './components/Layout';
+import LoadChar from './pages/LoadChar';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <Route path='*' element={<TitleScreen />} />
       <Route element={<Layout />}>
         <Route path='/newChar' element={<NewChar />} />
+        <Route path='/loadChar' element={<LoadChar />} />
         {/*<Route path="*" element={<NotFound />} /> */}
       </Route>
     </Routes>    

@@ -24,7 +24,7 @@ const Button = (props: ButtonProps) => {
     disabled = false,
     variant = 'ghost',
     icon,
-    iconPosition,
+    iconPosition = 'left',
     size = 'md',
     ...rest
   } = props;

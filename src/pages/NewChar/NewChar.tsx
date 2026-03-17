@@ -7,8 +7,8 @@ const NewChar = () => {
   return (
     <div className='newchar'>
 
-      <header className='newchar-header'>
-        <h1 className='newchar-title'> CHARACTER CREATION </h1>
+      <header className='page-header'>
+        <h1 className='page-title'> CHARACTER CREATION </h1>
       </header>
 
       <div className='newchar-container'>

@@ -21,7 +21,7 @@ const TitleScreen = (props: TitleScreenProps) => {
       <div className='menu-container'>
         <div className="panel">
           <Button onClick={() => handleNavigation('/newChar')}> New Character </Button>
-          <Button disabled onClick={() => console.log('click')}> Load Character </Button>
+          <Button onClick={() => handleNavigation('/loadChar')}> Load Character </Button>
         </div>
       </div>
     </div>

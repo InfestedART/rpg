@@ -1,6 +1,5 @@
 import { characterSchema } from "@/schemas/character.schema";
 import type { z } from "zod";
-// import { useFormContext } from 'react-hook-form'
 
 import Form from "@/components/Form";
 import TextInput from "@/components/Form/TextInput";
@@ -8,29 +7,16 @@ import Button from "@/components/Button";
 import SelectInput from "@/components/Form/SelectInput";
 import { CLASS_OPTIONS, WEAPONS_BY_CLASS, type CharClassType } from "@/constants/classes";
 import { useState } from "react";
+import { createCharacter } from "@/api/characters";
 
 type CharacterFormData = z.infer<typeof characterSchema>
-
-const submitData = async (data: CharacterFormData) => {
-  const response = await fetch('http://localhost:3001/characters', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to save character')
-  }
-}
 
 const CharacterForm = () => {
   const [charClass, setCharClass] = useState<CharClassType>('soldier')
 
   const onSubmit = (data: CharacterFormData) => {
     console.log("==> Valid character:", data)
-    submitData(data);
+    createCharacter(data);
   };
 
   const equipmentOptions =
@@ -58,7 +44,7 @@ const CharacterForm = () => {
             options={equipmentOptions}
           />
         )}
-        <Button className="mt-4" variant="primary" type="submit" size="sm">
+        <Button className="mt-8 ml-auto" variant="primary" type="submit" size="md">
           CREATE CHARACTER
         </Button>
       </Form>
