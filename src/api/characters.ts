@@ -27,3 +27,24 @@ export const createCharacter = async (data: CharacterFormData) => {
   }
 
 }
+
+export const deleteCharacter = async (id: number) => {
+  const response = await fetch(`http://localhost:3001/characters/${id}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to delete character');
+  }
+}
+
+export const getCharacterById = async (id: number) => {
+  const response = await fetch(`http://localhost:3001/characters/${id}`)
+  console.log('==> response', response);
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch character with id' + id)
+  }
+
+  return response.json()
+}

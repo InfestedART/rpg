@@ -3,7 +3,7 @@ import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import "./Button.css";
 import clsx from 'clsx';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 type IconPosition = 'left' | 'right';
 type ButtonSize = 'sm' | 'md' | 'lg';
 

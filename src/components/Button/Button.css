@@ -31,6 +31,14 @@
   background: var(--text-accent);
 }
 
+.btn--danger {
+  background: var(--bg-danger);
+}
+
+.btn--danger:hover {
+  background: var(--text-main);
+}
+
 .btn--icon-only {
   padding: 0.7rem;
   width: 40px;

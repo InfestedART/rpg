@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react';
 import './LoadChar.css'
 import type { CharClassType } from '@/constants/classes';
-import { getAllCharacters } from '@/api/characters';
+import {
+  getAllCharacters,
+  deleteCharacter,
+  getCharacterById,
+} from '@/api/characters';
 import Button from '@/components/Button';
-import { faTrash, faHome } from '@fortawesome/free-solid-svg-icons';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 type Character = {
   id: number;
@@ -15,20 +20,38 @@ type Character = {
 
 const LoadChar = () => {
   const [loading, setLoading] = useState<boolean>(true);
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const [charList, setCharList] = useState<Character[]>([]);
+  const [deletedId, setDeletedId] = useState<number | null >(null)
+
+  const fetchCharacters = async () => {
+    console.log('==> fetching all');
+    const data = await getAllCharacters();
+    setCharList(data);
+    setLoading(false);
+  }
+
+  const handleDelete = (id: number) => {
+    setIsAlertOpen(true);
+    setDeletedId(id);
+  }
+
+  const confirmDelete = async () => {
+    if (deletedId == null) return
+
+    await deleteCharacter(deletedId);
+    setIsAlertOpen(false);
+    setDeletedId(null);
+    fetchCharacters();
+  }
 
   useEffect(() => {
-    const fetchCharacters = async () => {
-      const data = await getAllCharacters();
-      setCharList(data)
-      setLoading(false)
-    }
-
     fetchCharacters();
   }, [])
 
+
   const getCharTable = () => (
-    <div className="max-w-xl border border-gray-200 rounded-lg overflow-hidden">
+    <div className="max-w-xl self-center border border-gray-200 rounded-lg overflow-hidden">
         <div className="grid grid-cols-3 bg-gray-100 font-semibold text-gray-700 px-1 py-3 text-bold">
           <div className="px-4">Name</div>
           <div className="px-4">Class</div>
@@ -43,7 +66,7 @@ const LoadChar = () => {
           <div className="px-4 self-center">{char.class}</div>
           <div className="flex flex-row px-4">
             <Button
-              onClick={() => console.log('click')}
+              onClick={() => getCharacterById(char.id)}
               className="mr-2"
               variant="primary"
               size="sm"
@@ -53,7 +76,7 @@ const LoadChar = () => {
             <Button
               icon={faTrash}
               iconPosition="left"
-              onClick={() => console.log('delete')}
+              onClick={() => handleDelete(char.id)}
               variant="primary"
               size="sm"
             />
@@ -69,6 +92,14 @@ const LoadChar = () => {
         <h1 className='page-title'> CHARACTER SELECTION</h1>
       </header>
       {loading ? <div>Loading...</div> : getCharTable()}
+      <ConfirmDialog
+        isOpen={isAlertOpen}
+        title="Delete character"
+        message="Are you sure you want to delete this character? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setIsAlertOpen(false)}
+        confirmLabel='Delete'
+      />
     </div>
   );
 }
