@@ -31,6 +31,14 @@
   background: var(--text-accent);
 }
 
+.btn--secondary {
+  background: var(--bg-button);
+}
+
+.btn--secondary:hover {
+  background: var(--bg-secondary);
+}
+
 .btn--danger {
   background: var(--bg-danger);
 }

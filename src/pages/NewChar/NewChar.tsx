@@ -1,8 +1,6 @@
 import './NewChar.css'
 import CharacterForm from './CharacterForm'
 
-/* type NewCharProps = {} */
-
 const NewChar = () => {
   return (
     <div className='newchar'>

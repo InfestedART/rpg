@@ -1,10 +1,12 @@
-// import { useState } from 'react'
 import './App.css'
 import { Routes, Route } from 'react-router-dom';
+
 import TitleScreen from './pages/TitleScreen/TitleScreen'
 import NewChar from './pages/NewChar/NewChar'
-import Layout from './components/Layout';
 import LoadChar from './pages/LoadChar';
+import Game from './pages/Game';
+
+import Layout from './components/Layout';
 
 function App() {
   return (
@@ -13,6 +15,7 @@ function App() {
       <Route element={<Layout />}>
         <Route path='/newChar' element={<NewChar />} />
         <Route path='/loadChar' element={<LoadChar />} />
+        <Route path='/game' element={<Game />} />
         {/*<Route path="*" element={<NotFound />} /> */}
       </Route>
     </Routes>    

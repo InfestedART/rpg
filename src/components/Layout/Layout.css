@@ -4,5 +4,5 @@
 
 .layout-container {
   margin: 0 auto;
-  width: var(--container-width, 1200px);
+  width: 100%;
 }

@@ -26,6 +26,7 @@ html, body {
   --bg-danger: #e20a0a;
   --text-accent: #9D7CFF;
   --bg-accent: #7049e6;
+  --bg-button: #4040D0;
   --disabled: #6b7280;
 
   --container-width: 1200px;
@@ -86,26 +87,3 @@ button:focus-visible {
   }
 } */
 
-
-.page-header {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 0.5rem;
-}
-
-.page-title {
-  font-size: 1.6rem;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--text-main);
-  margin: 0.5rem auto 1.6rem;
-}
-
-.page-panel {
-  background: var(--bg-panel);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 14px;
-  padding: 0.6rem 1rem;
-  min-height: 500px;
-}

@@ -1,22 +1,31 @@
-import { characterSchema } from "@/schemas/character.schema";
+import { useState } from "react";
 import type { z } from "zod";
 
 import Form from "@/components/Form";
 import TextInput from "@/components/Form/TextInput";
 import Button from "@/components/Button";
 import SelectInput from "@/components/Form/SelectInput";
-import { CLASS_OPTIONS, WEAPONS_BY_CLASS, type CharClassType } from "@/constants/classes";
-import { useState } from "react";
+
+import { characterSchema } from "@/schemas/character.schema";
 import { createCharacter } from "@/api/characters";
+import { useCharacterStore } from "@/store/characterStore";
+import { CLASS_OPTIONS, WEAPONS_BY_CLASS } from "@/constants/classOptions";
+import type { CharacterType, CharClassType } from "@/types/characterTypes";
+
+import { useNavigate } from 'react-router-dom';
 
 type CharacterFormData = z.infer<typeof characterSchema>
 
 const CharacterForm = () => {
   const [charClass, setCharClass] = useState<CharClassType>('soldier')
+  const { setSelectedCharacter } = useCharacterStore();
+  const navigate = useNavigate();
 
-  const onSubmit = (data: CharacterFormData) => {
+  const onSubmit = async (data: CharacterFormData) => {
+    await createCharacter(data);
+    setSelectedCharacter(data as CharacterType);
     console.log("==> Valid character:", data)
-    createCharacter(data);
+    navigate('/game');
   };
 
   const equipmentOptions =

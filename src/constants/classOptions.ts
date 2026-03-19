@@ -1,4 +1,4 @@
-export type CharClassType = 'soldier' | 'wizard' | 'ranger' | 'warrior' | 'bandit'
+
 
 export const CLASS_OPTIONS = [
   {

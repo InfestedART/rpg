@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import './LoadChar.css'
-import type { CharClassType } from '@/constants/classes';
+
 import {
   getAllCharacters,
   deleteCharacter,
@@ -9,6 +11,8 @@ import {
 import Button from '@/components/Button';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { useCharacterStore } from '@/store/characterStore';
+import type { CharClassType } from '@/types/characterTypes';
 
 type Character = {
   id: number;
@@ -22,7 +26,10 @@ const LoadChar = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const [charList, setCharList] = useState<Character[]>([]);
-  const [deletedId, setDeletedId] = useState<number | null >(null)
+  const [deletedId, setDeletedId] = useState<number | null >(null);
+
+  const { setSelectedCharacter } = useCharacterStore();
+  const navigate = useNavigate();
 
   const fetchCharacters = async () => {
     console.log('==> fetching all');
@@ -34,6 +41,13 @@ const LoadChar = () => {
   const handleDelete = (id: number) => {
     setIsAlertOpen(true);
     setDeletedId(id);
+  }
+
+  const handleSelect = async (id: number) => {
+    const char = await getCharacterById(id)
+    setSelectedCharacter(char);
+    console.log('==> selected:', char);
+    navigate('/game');
   }
 
   const confirmDelete = async () => {
@@ -66,7 +80,7 @@ const LoadChar = () => {
           <div className="px-4 self-center">{char.class}</div>
           <div className="flex flex-row px-4">
             <Button
-              onClick={() => getCharacterById(char.id)}
+              onClick={() => handleSelect(char.id)}
               className="mr-2"
               variant="primary"
               size="sm"

@@ -1,4 +1,5 @@
-import Button from "../Button"
+import './ConfirmDialog.css';
+import Button from "../Button";
 
 type ConfirmDialogProps = {
   isOpen: boolean
@@ -21,11 +22,11 @@ const ConfirmDialog = ({
 }: ConfirmDialogProps) => {
   if (!isOpen) return null
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-100">
+      <div className="alert-container rounded-xl shadow-lg w-full max-w-sm p-6">
         
-        <h2 className="text-lg font-semibold mb-2 text-black">{title}</h2>
-        <p className="text-gray-600 mb-6">{message}</p>
+        <h2 className="alert-title text-lg font-semibold mb-2">{title}</h2>
+        <p className="mb-6">{message}</p>
 
         <div className="flex justify-end gap-3">
           <Button
