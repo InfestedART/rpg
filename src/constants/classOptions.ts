@@ -1,5 +1,3 @@
-
-
 export const CLASS_OPTIONS = [
   {
     label: 'Soldier',
@@ -58,4 +56,12 @@ export const ARMOUR_BY_CLASS = {
   ranger: { value: 'robes', label: 'Acolyte Robes'},
   warrior: { value: 'Hide', label: 'hide Armour'},
   bandit: { value: 'leather', label: 'Leather Armorr'},
+}
+
+export const CLASS_STATS = {
+  soldier: { baseDmg: 4, baseHp: 25, moveSpeed: 2, initiative: 3}, // total: 14
+  wizard: { baseDmg: 2, baseHp: 15, moveSpeed: 2, initiative: 6 }, // total: 13
+  ranger: { baseDmg: 3, baseHp: 15, moveSpeed: 4, initiative: 4}, // total: 14
+  warrior: { baseDmg: 5, baseHp: 20, moveSpeed: 3, initiative: 3}, // total: 15
+  bandit: { baseDmg: 3, baseHp: 15, moveSpeed: 4, initiative: 5}, // total: 15
 }

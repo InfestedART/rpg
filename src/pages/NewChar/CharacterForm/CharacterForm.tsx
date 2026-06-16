@@ -8,17 +8,20 @@ import SelectInput from "@/components/Form/SelectInput";
 
 import { characterSchema } from "@/schemas/character.schema";
 import { createCharacter } from "@/api/characters";
-import { useCharacterStore } from "@/store/characterStore";
 import { CLASS_OPTIONS, WEAPONS_BY_CLASS } from "@/constants/classOptions";
 import type { CharacterType, CharClassType } from "@/types/characterTypes";
 
 import { useNavigate } from 'react-router-dom';
+import { useGameStore } from '@/store/gameStore'
+import { useCharacterStore } from "@/store/characterStore";
 
 type CharacterFormData = z.infer<typeof characterSchema>
 
 const CharacterForm = () => {
   const [charClass, setCharClass] = useState<CharClassType>('soldier')
   const { setSelectedCharacter } = useCharacterStore();
+  const { setCurrentClass } = useGameStore();
+
   const navigate = useNavigate();
 
   const onSubmit = async (data: CharacterFormData) => {
@@ -29,9 +32,9 @@ const CharacterForm = () => {
   };
 
   const equipmentOptions =
-  charClass && WEAPONS_BY_CLASS[charClass]
-    ? WEAPONS_BY_CLASS[charClass]
-    : []
+    charClass && WEAPONS_BY_CLASS[charClass]
+      ? WEAPONS_BY_CLASS[charClass]
+      : []
 
   return (
     <div className="newchar-stats">
@@ -44,7 +47,10 @@ const CharacterForm = () => {
           label="Class"
           name="class"
           options={CLASS_OPTIONS}
-          onChange={(ev) => setCharClass(ev.target.value as CharClassType)}
+          onChange={(ev) => {
+            setCharClass(ev.target.value as CharClassType)
+            setCurrentClass(ev.target.value as CharClassType)
+          }}
         />
         {charClass && (
           <SelectInput

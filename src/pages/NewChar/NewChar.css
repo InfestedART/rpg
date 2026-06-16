@@ -23,6 +23,12 @@
   min-height: 500px;
 }
 
+.newchar-panel h2 {
+  font-weight: bold;
+  /* text-align: center; */
+  margin: 0.3rem auto 1rem;
+}
+
 .newchar-panel.center {
   background-color: transparent;
   border: 0;

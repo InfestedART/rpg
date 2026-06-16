@@ -1,7 +1,12 @@
 import './NewChar.css'
 import CharacterForm from './CharacterForm'
+import { useGameStore } from '@/store/gameStore'
+import { CLASS_STATS } from "@/constants/classOptions";
 
 const NewChar = () => {
+  const { currentClass } = useGameStore();
+  const classStats = currentClass && CLASS_STATS[currentClass]
+
   return (
     <div className='newchar'>
 
@@ -18,7 +23,11 @@ const NewChar = () => {
           <h2>PREVIEW</h2>
         </section>
         <aside className='newchar-panel rigth'>
-          <h2>SUMMARY</h2>
+          <h2>DETAILS</h2>
+          <div>HP: {classStats.baseHp}</div>
+          <div>Damage: {classStats.baseDmg}</div>
+          <div>Move Speed: {classStats.moveSpeed}</div>
+          <div>Initiative: {classStats.initiative}</div>
         </aside>
       </div>
 

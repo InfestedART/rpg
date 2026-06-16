@@ -32,7 +32,6 @@ const LoadChar = () => {
   const navigate = useNavigate();
 
   const fetchCharacters = async () => {
-    console.log('==> fetching all');
     const data = await getAllCharacters();
     setCharList(data);
     setLoading(false);
@@ -46,7 +45,6 @@ const LoadChar = () => {
   const handleSelect = async (id: number) => {
     const char = await getCharacterById(id)
     setSelectedCharacter(char);
-    console.log('==> selected:', char);
     navigate('/game');
   }
 
