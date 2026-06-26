@@ -2,17 +2,23 @@ import useChessGame from './useChessGame';
 import { UNICODE_PIECES, FILES, RANKS, STATUS_MESSAGES } from '@/constants/chessConstants';
 // import { isKingInCheck } from './useChessGame';
 import type { Square } from '@/types/chessTypes';
+import ChessModal from './ChessModal';
 import './Chess.css';
+import { useState } from 'react';
 
 const Chess = () => {
-    const {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+
+  const {
     board,
     currentTurn,
     selected,
     gameStatus,
     handleSquareClick,
     isValidMove,
-    resetGame
+    resetGame,
+    pendingPromotion,
+    handlePromotion
   } = useChessGame();
 
   const kingInCheck = gameStatus === 'check' || gameStatus === 'checkmate';
@@ -112,8 +118,15 @@ const Chess = () => {
           </button>
 
         </div>
-      </div>
 
+        {pendingPromotion && (
+          <ChessModal
+            color={pendingPromotion.color}
+            onSelect={handlePromotion}
+          />
+        )}
+
+      </div>
     </div>
   )
 }

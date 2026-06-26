@@ -3,11 +3,12 @@ import { INITIAL_BOARD, INITIAL_CASTLING_RIGHTS } from '@/constants/chessConstan
 import type {
   Board,
   PieceColor,
+  PieceType,
   CastlingRights,
   Position,
   PromotionState,
   GameStatus,
-  MoveRecord
+  EnPassantTarget,
 } from '@/types/chessTypes';
 
 const isInBounds = (row: number, col: number) => row >= 0 && row < 8 && col >= 0 && col < 8;
@@ -17,7 +18,13 @@ const isPromotionSquare = (row: number, color: PieceColor) =>
 
 // --- PIECE MOVEMENTS ---
 
-const getPawnMoves = (board: Board, row: number, col: number, color: PieceColor): Position[] => {
+const getPawnMoves = (
+  board: Board,
+  row: number,
+  col: number,
+  color: PieceColor,
+  enPassantTarget: EnPassantTarget
+): Position[] => {
   const moves: Position[] = [];
   const direction = color === 'white' ? -1 : 1;
   const startRow = color === 'white' ? 6 : 1;
@@ -30,11 +37,15 @@ const getPawnMoves = (board: Board, row: number, col: number, color: PieceColor)
     }
   }
 
-  // Diagonal captures
   for (const diagCol of [-1, 1]) {
     const newRow = row + direction;
     const newCol = col + diagCol;
+    // Diagonal capture
     if (isInBounds(newRow, newCol) && board[newRow][newCol]?.color !== color && board[newRow][newCol]) {
+      moves.push({ row: newRow, col: newCol });
+    }
+    // En passant capture
+    if (enPassantTarget && enPassantTarget.row === newRow && enPassantTarget.col === newCol) {
       moves.push({ row: newRow, col: newCol });
     }
   }
@@ -88,7 +99,12 @@ const getStepMoves = (
   return newPosition;
 }
 
-export const getValidMoves = (board: Board, row: number, col: number): Position[] => {
+export const getValidMoves = (
+  board: Board,
+  row: number,
+  col: number,
+  enPassantTarget: EnPassantTarget = null
+): Position[] => {
   const piece = board[row][col];
   if (!piece) return [];
 
@@ -103,7 +119,7 @@ export const getValidMoves = (board: Board, row: number, col: number): Position[
   ];
 
   switch (piece.type) {
-    case 'pawn': return getPawnMoves(board, row, col, piece.color);
+    case 'pawn': return getPawnMoves(board, row, col, piece.color, enPassantTarget);
     case 'rook': return getSlidingMoves(board, row, col, piece.color, rookDirections);
     case 'bishop': return getSlidingMoves(board, row, col, piece.color, bishopDirections);
     case 'knight': return getStepMoves(board, row, col, piece.color, knightDirections);
@@ -215,34 +231,80 @@ const moveLeavesKingInCheck = (board: Board, from: Position, to: Position, color
   return isKingInCheck(newBoard, color);
 };
 
-export const getLegalMoves = (board: Board, row: number, col: number, castlingRights: CastlingRights): Position[] => {
+const moveLeavesKingInCheckEnPassant = (
+  board: Board,
+  from: Position,
+  to: Position,
+  capturedPawnPos: Position,
+  color: PieceColor
+): boolean => {
+  const newBoard = board.map(r => [...r]);
+  newBoard[to.row][to.col] = newBoard[from.row][from.col];
+  newBoard[from.row][from.col] = null;
+  newBoard[capturedPawnPos.row][capturedPawnPos.col] = null; // remove captured pawn
+  return isKingInCheck(newBoard, color);
+};
+
+export const getLegalMoves = (
+  board: Board,
+  row: number,
+  col: number,
+  castlingRights: CastlingRights,
+  enPassantTarget: EnPassantTarget = null
+): Position[] => {
   const piece = board[row][col];
   if (!piece) return [];
 
-  const regularMoves = getValidMoves(board, row, col).filter(
-    to => !moveLeavesKingInCheck(board, { row, col }, to, piece.color)
-  );
+  const candidateMoves = getValidMoves(board, row, col, enPassantTarget);
 
-  const castling = piece.type === 'king'
-    ? getCastlingMoves(board, row, col, castlingRights)
-    : [];
+  const regular = candidateMoves.filter(to => {
+    const isEnPassantMove =
+      piece.type === 'pawn' &&
+      enPassantTarget &&
+      to.row === enPassantTarget.row &&
+      to.col === enPassantTarget.col &&
+      !board[to.row][to.col];
 
-  return [...regularMoves, ...castling];
+    if (isEnPassantMove) {
+      const capturedPawnPos = { row, col: to.col };
+      return !moveLeavesKingInCheckEnPassant(board, { row, col }, to, capturedPawnPos, piece.color);
+    }
+
+    return !moveLeavesKingInCheck(board, { row, col }, to, piece.color);
+  })
+
+  const castling = piece.type === 'king' ? getCastlingMoves(board, row, col, castlingRights) : [];
+  return [...regular, ...castling];
 };
 
 
-const hasAnyLegalMoves = (board: Board, color: PieceColor, castlingRights: CastlingRights): boolean => {
+const hasAnyLegalMoves = (
+  board: Board,
+  color: PieceColor,
+  castlingRights: CastlingRights,
+  enPassantTarget: EnPassantTarget
+): boolean => {
   for (let row = 0; row < 8; row++) {
     for (let col = 0; col < 8; col++) {
-      if (board[row][col]?.color === color && getLegalMoves(board, row, col, castlingRights).length > 0) return true;
+      if (
+        board[row][col]?.color === color &&
+        getLegalMoves(board, row, col, castlingRights, enPassantTarget).length > 0
+      ) {
+        return true;
+      } 
     }
   }
   return false;
 };
 
-export const getGameStatus = (board: Board, currentTurn: PieceColor, castlingRights: CastlingRights) => {
+export const getGameStatus = (
+  board: Board,
+  currentTurn: PieceColor,
+  castlingRights: CastlingRights,
+  enPassantTarget: EnPassantTarget = null
+) => {
   const inCheck = isKingInCheck(board, currentTurn);
-  const hasLegal = hasAnyLegalMoves(board, currentTurn, castlingRights);
+  const hasLegal = hasAnyLegalMoves(board, currentTurn, castlingRights, enPassantTarget);
 
   if (!hasLegal && inCheck)  return 'checkmate';
   if (!hasLegal && !inCheck) return 'stalemate';
@@ -259,13 +321,10 @@ const useChessGame = () => {
   const [validMoves, setValidMoves]   = useState<Position[]>([]);
   const [gameStatus, setGameStatus]   = useState<GameStatus>('playing');
   const [castlingRights, setCastlingRights]   = useState<CastlingRights>(INITIAL_CASTLING_RIGHTS);
+  const [enPassantTarget, setEnPassantTarget] = useState<EnPassantTarget>(null);
 
   const [pendingPromotion, setPendingPromotion] = useState<PromotionState>(null);
   const [prePromotionBoard, setPrePromotionBoard] = useState<Board | null>(null);
-  const [prePromotionRecord, setPrePromotionRecord] = useState<Omit<MoveRecord, 'notation'> | null>(null);
-  
-
-
   const isValidMove = (row: number, col: number) => 
     validMoves.some(move => move.row === row && move.col === col);
 
@@ -278,11 +337,12 @@ const useChessGame = () => {
     setCastlingRights(INITIAL_CASTLING_RIGHTS);
     setPendingPromotion(null);
     setPrePromotionBoard(null);
-    setPrePromotionRecord(null);
+    setEnPassantTarget(null);
   };
 
   const handleSquareClick = (row: number, col: number) => {
     if (gameStatus === 'checkmate' || gameStatus === 'stalemate') return;
+    if (pendingPromotion) return; // block clicks while modal is open
 
     const clickedPiece = board[row][col];
 
@@ -290,7 +350,7 @@ const useChessGame = () => {
     if (!selected) {
       if (clickedPiece?.color === currentTurn) {
         setSelected({ row, col });
-        setValidMoves(getLegalMoves(board, row, col, castlingRights));
+        setValidMoves(getLegalMoves(board, row, col, castlingRights, enPassantTarget));
       }
       return;
     } 
@@ -305,7 +365,7 @@ const useChessGame = () => {
     // Case 3: Clicking another own piece — switch selection
     if (clickedPiece?.color === currentTurn) {
       setSelected({ row, col });
-      setValidMoves(getLegalMoves(board, row, col, castlingRights));
+      setValidMoves(getLegalMoves(board, row, col, castlingRights, enPassantTarget));
       return;
     }
 
@@ -313,6 +373,21 @@ const useChessGame = () => {
     if (isValidMove(row, col)) {
       const newBoard = board.map(r => [...r]);
       const piece = newBoard[selected.row][selected.col];
+
+      const isEnPassant =
+        piece?.type === 'pawn' &&
+        enPassantTarget &&
+        row === enPassantTarget.row &&
+        col === enPassantTarget.col &&
+        !board[row][col];
+      
+      let captured = newBoard[row][col] ?? undefined;
+
+      if (isEnPassant) {
+        const capturedPawnRow = selected.row;
+        captured = newBoard[capturedPawnRow][col] ?? undefined;
+        newBoard[capturedPawnRow][col] = null;
+      }
 
       const isCastle = piece?.type === 'king' && Math.abs(col - selected.col) === 2;
 
@@ -327,6 +402,13 @@ const useChessGame = () => {
       newBoard[row][col] = board[selected.row][selected.col];
       newBoard[selected.row][selected.col] = null;
 
+      if (piece?.type === 'pawn' && isPromotionSquare(row, piece.color)) {
+        setPrePromotionBoard(newBoard);
+        setBoard(newBoard);
+        setPendingPromotion({ row, col, color: piece.color });
+        return;
+      }
+
       const nextTurn: PieceColor = currentTurn === 'white' ? 'black' : 'white';
       const newRights = updateCastlingRights(castlingRights, selected.row, selected.col);
       const status = getGameStatus(newBoard, nextTurn, castlingRights);
@@ -340,6 +422,24 @@ const useChessGame = () => {
     }
   }
 
+  const handlePromotion = (pieceType: PieceType) => {
+    if (!pendingPromotion || !prePromotionBoard) return;
+    
+    const { row, col, color } = pendingPromotion;
+    const promotedBoard = prePromotionBoard.map(r => [...r]);
+    promotedBoard[row][col] = { type: pieceType, color };
+
+    const nextTurn: PieceColor = color === 'white' ? 'black' : 'white';
+    const newRights = castlingRights;
+    const newStatus = getGameStatus(promotedBoard, nextTurn, newRights);
+
+    setBoard(promotedBoard);
+    setCurrentTurn(nextTurn);
+    setGameStatus(newStatus);
+    setPendingPromotion(null);
+    setPrePromotionBoard(null);
+  }
+
   return {
     board,
     currentTurn,
@@ -347,8 +447,11 @@ const useChessGame = () => {
     validMoves,
     gameStatus,
     handleSquareClick,
+    handlePromotion,
     isValidMove,
-    resetGame
+    resetGame,
+    pendingPromotion,
+    enPassantTarget
   };
 }
 

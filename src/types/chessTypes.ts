@@ -29,12 +29,4 @@ export type PromotionState = {
   color: PieceColor;
 } | null;
 
-export interface MoveRecord {
-  piece:      ChessPiece;
-  from:       string;       // e.g. "e2"
-  to:         string;       // e.g. "e4"
-  captured?:  ChessPiece;
-  isCastle?:  'kingside' | 'queenside';
-  isCheck?:   boolean;
-  notation:   string;       // e.g. "e4", "Nf3", "O-O"
-}
+export type EnPassantTarget = Position | null;
