@@ -1,0 +1,9 @@
+.dungeon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dungeon {
+  margin: 1rem 0
+}

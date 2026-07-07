@@ -1,14 +1,10 @@
 import useChessGame from './useChessGame';
 import { UNICODE_PIECES, FILES, RANKS, STATUS_MESSAGES } from '@/constants/chessConstants';
-// import { isKingInCheck } from './useChessGame';
 import type { Square } from '@/types/chessTypes';
 import ChessModal from './ChessModal';
 import './Chess.css';
-import { useState } from 'react';
 
 const Chess = () => {
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
-
   const {
     board,
     currentTurn,
@@ -92,8 +88,7 @@ const Chess = () => {
           {board.map((row, rowIndex) => (
             <div key={rowIndex} className='flex'>
               <div className='rank-label'>{RANKS[rowIndex]}</div> 
-              {row.map((square, colIndex) => {
-                return (
+              {row.map((square, colIndex) =>(
                   <div
                     key={colIndex}
                     className={getSquareClassName(rowIndex, colIndex)}
@@ -101,8 +96,8 @@ const Chess = () => {
                     >
                     {renderPiece(square)}
                   </div>
-                );
-              })}           
+                )
+              )}          
             </div>
           ))}
 

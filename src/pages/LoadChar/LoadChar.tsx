@@ -63,7 +63,7 @@ const LoadChar = () => {
 
 
   const getCharTable = () => (
-    <div className="max-w-xl self-center border border-gray-200 rounded-lg overflow-hidden">
+    <div className="max-w-7xl self-center border border-gray-200 rounded-lg overflow-hidden">
         <div className="grid grid-cols-3 bg-gray-100 font-semibold text-gray-700 px-1 py-3 text-bold">
           <div className="px-4">Name</div>
           <div className="px-4">Class</div>

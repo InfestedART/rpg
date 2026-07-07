@@ -5,11 +5,11 @@ import type {
   PieceColor,
   PieceType,
   CastlingRights,
-  Position,
   PromotionState,
   GameStatus,
   EnPassantTarget,
 } from '@/types/chessTypes';
+import type { Position } from '@/types/dungeon.types';
 
 const isInBounds = (row: number, col: number) => row >= 0 && row < 8 && col >= 0 && col < 8;
 
@@ -381,11 +381,11 @@ const useChessGame = () => {
         col === enPassantTarget.col &&
         !board[row][col];
       
-      let captured = newBoard[row][col] ?? undefined;
+      // let captured = newBoard[row][col] ?? undefined;
 
       if (isEnPassant) {
         const capturedPawnRow = selected.row;
-        captured = newBoard[capturedPawnRow][col] ?? undefined;
+        // captured = newBoard[capturedPawnRow][col] ?? undefined;
         newBoard[capturedPawnRow][col] = null;
       }
 

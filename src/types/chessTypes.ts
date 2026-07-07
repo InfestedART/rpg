@@ -1,3 +1,5 @@
+import type { Position } from "./dungeon.types";
+
 export type PieceType = 'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'pawn';
 export type PieceColor = 'white' | 'black';
 
@@ -14,11 +16,6 @@ export interface CastlingRights {
   whiteQueenSide: boolean;
   blackKingSide:  boolean;
   blackQueenSide: boolean;
-}
-
-export interface Position {
-  row: number;
-  col: number;
 }
 
 export type GameStatus = 'playing' | 'check' | 'checkmate' | 'stalemate';

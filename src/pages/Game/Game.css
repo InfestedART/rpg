@@ -1,5 +1,5 @@
 .main-game {
-  margin: 3rem auto;
+  margin: 2rem auto;
   padding: 1rem;
   width: min(992px, 100% - 3rem);
   background-color: var(--bg-secondary);
@@ -11,7 +11,7 @@
 
 .game-container {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 1fr 3fr;
   gap: 1rem;
 }
 
