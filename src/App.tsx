@@ -10,6 +10,7 @@ import Game from './pages/Game';
 import Chess from './pages/Chess';
 import NotFound from './pages/NotFound';
 import Dungeon from './pages/Dungeon';
+import StoreRequired from './components/Layout/StoreRequired';
 
 function App() {
   return (
@@ -18,10 +19,13 @@ function App() {
       <Route element={<Layout />}>
         <Route path='/newChar' element={<NewChar />} />
         <Route path='/loadChar' element={<LoadChar />} />
-        <Route path='/game' element={<Game />} />
-        <Route path='/dungeon' element={<Dungeon />} />
         <Route path='/chess' element={<Chess />} />
         <Route path="*" element={<NotFound />} />
+
+        <Route element={<StoreRequired />}>
+          <Route path='/game' element={<Game />} />
+          <Route path='/dungeon' element={<Dungeon />} />
+        </Route>
       </Route>
     </Routes>    
   )

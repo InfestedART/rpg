@@ -1,5 +1,18 @@
+.main-container {
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
+  gap: 0;
+}
+
+.game-panel.center {
+  background-color: transparent;
+  border: 0;
+  padding: 0.5rem;
+}
+
 .dungeon-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 }

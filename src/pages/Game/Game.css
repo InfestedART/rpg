@@ -1,7 +1,7 @@
 .main-game {
   margin: 2rem auto;
   padding: 1rem;
-  width: min(992px, 100% - 3rem);
+  width: min(1080px, 100% - 3rem);
   background-color: var(--bg-secondary);
   border-radius: 10px;
 

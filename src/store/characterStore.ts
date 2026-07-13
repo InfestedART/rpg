@@ -8,17 +8,6 @@ type CharacterStore = {
   setSelectedCharacter: (char: CharacterType) => void
 }
 
-/* export const useCharacterStore = create(
-  persist(
-    (set) => ({
-      selectedCharacter: null,
-      setSelectedCharacter: (char: Character) => set({ selectedCharacter: char }),
-    }),
-    {
-      name: 'character-storage',
-    }
-  )
-) */
 
 export const useCharacterStore = create<CharacterStore>()(
   persist(

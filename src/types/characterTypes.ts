@@ -5,5 +5,6 @@ export type CharacterType = {
   name: string,
   class: CharClassType,
   equipment: string,
+  moveSpeed: number,
   createdAt?: string,
 }
