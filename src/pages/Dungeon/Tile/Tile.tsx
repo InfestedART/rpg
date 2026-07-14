@@ -2,12 +2,14 @@ import type { TileContent, TileTerrain } from '@/types/dungeon.types';
 import './Tile.css';
 
 type TileProps = {
-  terrain: TileTerrain
-  piece: TileContent
-  onClick: () => void
+  terrain: TileTerrain;
+  // status?: 'active' | 'enemyInRange' | 'objectInRange' | ''
+  status: string;
+  piece: TileContent;
+  onClick: () => void;
 }
 
-const Tile = ({ terrain, piece, onClick }: TileProps) => {
+const Tile = ({ terrain, status, piece, onClick }: TileProps) => {
   const getPiece = (piece: TileContent) => {
     let label;
     switch(piece) {
@@ -23,7 +25,7 @@ const Tile = ({ terrain, piece, onClick }: TileProps) => {
   }
 
   return (
-    <div className={`tile ${terrain}`} onClick={onClick}>
+    <div className={`tile ${terrain} ${status}`} onClick={onClick}>
       {getPiece(piece)}
     </div>
   )

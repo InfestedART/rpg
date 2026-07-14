@@ -4,6 +4,18 @@
   gap: 0;
 }
 
+.actions-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 40px);
+}
+
+.details {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0; 
+}
+
 .game-panel.center {
   background-color: transparent;
   border: 0;

@@ -9,14 +9,14 @@ export const DIRECTION_MAP: Record<string, Position> = {
 };
 
 export const DUNGEON_SIZE: Record<string, number> = {
-  xs: 4,
-  sm: 6,
-  md: 8,
-  lg: 10,
-  xl: 12
+  xs: 6,
+  sm: 8,
+  md: 10,
+  lg: 12,
+  xl: 14
 }
 
-// export const DUNGEON_TYPE: string[] = [ 'fields', 'cave', 'dungeon']
+export const DUNGEON_TYPE: string[] = [ 'fields', 'cave', 'dungeon']
 
 export const DUNGEON_SIZE_OPTIONS: SelectOption[] = [
   { label: '6', value: 'sm'},

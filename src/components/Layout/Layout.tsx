@@ -10,31 +10,30 @@ import Sidebar from './Sidebar';
 import type { NavbarButton } from './Navbar/Navbar';
 import type { SidebarButton } from './Sidebar/Sidebar';
 
+const navigate = useNavigate();
+
+const navbarButtons: NavbarButton[] = [
+  {
+    label: 'HOME',
+    action: () => navigate('/'),
+    icon: faHome,
+    iconPosition: 'left'
+  }
+];
+
+const sidebarButtons: SidebarButton[] = [
+  {
+    label: 'ITEM 1',
+    action: () => console.log('click 1')
+  },
+];
+
 type LayoutProps = {}
 
 const Layout = (props: LayoutProps) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const navigate = useNavigate();
-
-    const navbarButtons: NavbarButton[] = [
-      {
-        label: 'HOME',
-        action: () => navigate('/'),
-        icon: faHome,
-        iconPosition: 'left'
-      }
-    ];
-
-    const sidebarButtons: SidebarButton[] = [
-      {
-        label: 'ITEM 1',
-        action: () => console.log('click 1')
-      },
-      {
-        label: 'ITEM 2',
-        action: () => console.log('click 2')
-      },
-    ];
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [leftOpen, setLeftOpen] = useState<boolean>(false);
+    const [rightOpen, setRightOpen] = useState<boolean>(false);
 
     return(
       <div className="layout h-screen w-full flex flex-col">
@@ -61,34 +60,6 @@ const Layout = (props: LayoutProps) => {
           isOpen={isOpen}
           closeSidebar={() => setIsOpen(false)}
         />
-
-      {/* <aside
-        className={`
-          fixed top-14 right-0
-          h-[calc(100%-3.5rem)] w-64
-          bg-gray-700 text-white
-          transform transition-transform duration-300 ease-in-out
-          z-50
-          ${isOpen ? "translate-x-0" : "translate-x-full"}
-        `}
-      >
-        <div className="p-4">
-          <button
-            onClick={() => setIsOpen(false)}
-            className="mb-4 text-sm bg-gray-700 px-2 py-1 rounded"
-          >
-            Close
-          </button>
-
-          <h2 className="font-semibold mb-4">Sidebar</h2>
-
-          <ul className="space-y-2">
-            <li>Item 1</li>
-            <li>Item 2</li>
-            <li>Item 3</li>
-          </ul>
-        </div>
-      </aside> */}
 
       </div>
     )
