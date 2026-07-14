@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { clsx } from 'clsx';
 import { useCharacterStore } from '@/store/characterStore';
 import useDungeonEngine from './useDungeonEngine';
@@ -6,11 +7,14 @@ import Button from '@/components/Button';
 import Tile from './Tile';
 
 import './Dungeon.css';
+import Sidebar from '@/components/Layout/Sidebar';
+
 
 const Dungeon = () => {
   const navigate = useNavigate();
   const { board, boardRef, nextTurn, gameState, selectedTile, handleTileClick } = useDungeonEngine();
   const { selectedCharacter } = useCharacterStore();
+  const [leftOpen, setLeftOpen] = useState<boolean>(true)
   if (!selectedCharacter) return
 
   return (
@@ -18,6 +22,11 @@ const Dungeon = () => {
       <header className='page-header'>
         <h1 className='page-title'> DUNGEON </h1>
       </header>
+
+      <Sidebar side='left' isOpen={leftOpen}>
+        SIDEBAR
+      </Sidebar>
+      
       <div className='main-container'>
 
         <aside className='game-panel left'>

@@ -1,11 +1,12 @@
-import './Navbar.css';
-import Button from "../../Button";
 import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
+import Button from '@/components/Button';
+
+import './Navbar.css';
 
 type IconPosition = 'left' | 'right';
 
 export type NavbarButton = {
-  label: string;
+  label?: string;
   action: () => void;
   icon?: IconDefinition;
   iconPosition?: IconPosition;
@@ -13,14 +14,14 @@ export type NavbarButton = {
 
 type NavbarProps = {
   navButtons: NavbarButton[];
-  sidebarAction: () => void;
+  title?: string;
 }
 
-const Navbar = ({navButtons, sidebarAction}: NavbarProps) => {
+const Navbar = ({navButtons, title}: NavbarProps) => {
   return(
     <nav className="navbar w-full h-14 flex items-center justify-between px-4 z-40">
       <div className='navbar-container'>
-        <div className="left-side">
+        <div className="navbar-icons">
           {navButtons.map((btn: NavbarButton) => (
             <Button
               onClick={btn.action}
@@ -28,13 +29,11 @@ const Navbar = ({navButtons, sidebarAction}: NavbarProps) => {
               icon={btn.icon}
               iconPosition={btn.iconPosition}
             >
-              {btn.label}
+              {btn.label && btn.label}
             </Button>
           ))}
         </div>
-        <div className="right-side">
-          <Button onClick={sidebarAction}>Open Sidebar</Button>
-        </div>
+        { title && <span className="navbar-title">{title}</span> }
       </div>
     </nav>
   );

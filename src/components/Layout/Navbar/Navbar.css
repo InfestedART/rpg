@@ -10,3 +10,8 @@
     display: flex;
     justify-content: space-between;
 }
+
+.navbar-icons {
+  display: flex;
+  flex-direction: row;
+}

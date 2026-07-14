@@ -1,42 +1,44 @@
 import Button from 'components/Button';
 import './Sidebar.css';
+import { useState } from 'react';
 
-export type SidebarButton = {
-  label: string;
-  action: () => void;
-}
+export type SidebarSide = 'left' | 'right';
 
 type SidebarProps = {
-  sidebarBtns: SidebarButton[];
-  closeSidebar: () => void;
-  isOpen: boolean;
+  side: SidebarSide;
+  children?: React.ReactNode;
+  isOpen?: boolean;
 }
 
-const Sidebar = ({sidebarBtns, closeSidebar, isOpen}: SidebarProps) => {
+const Sidebar = ({side, children, isOpen = true}: SidebarProps) => {
+  const [open, setOpen] = useState<boolean>(isOpen);
+  const collapseIcon = side === 'left' ? '‹' : '›';
+  const expandIcon = side === 'left' ? '›' : '‹';
+  
+  if (!open) {
+    return (
+      <button
+        className={`sidebar-rail sidebar-rail-${side}`}
+        onClick={() => setOpen(true)}
+        aria-label={`Open ${side} sidebar`}
+      >
+        <span className="sidebar-rail-icon">{expandIcon}</span>
+      </button>
+    );
+  }
+
   return (
-    <aside
-      className={`
-        sidebar
-        fixed top-14 right-0
-        h-[calc(100%-3.5rem)] w-64
-        transform transition-transform duration-300 ease-in-out
-        z-50
-        ${isOpen ? "translate-x-0" : "translate-x-full"}
-      `}
-    >
-      <div className="p-4">
-        <Button
-          onClick={() => closeSidebar()}
-          className="btn--close m-0 text-xs p-0"
+    <aside className={`sidebar sidebar-${side}`}>
+      <div className="sidebar-header">
+        <button
+          className="sidebar-toggle"
+          onClick={() => setOpen(false)}
+          aria-label={`Close ${side} sidebar`}
         >
-          X
-        </Button>
-          {
-            sidebarBtns.map((btn: SidebarButton) => (
-                <Button key={btn.label} onClick={btn.action}>{btn.label}</Button>
-            ))
-          }
+          {collapseIcon}
+        </button>
       </div>
+      <div className="sidebar-content">{children}</div>
     </aside>
   )
 }
