@@ -1,13 +1,18 @@
 .main-container {
-  display: grid;
-  grid-template-columns: 1fr 3fr 1fr;
   gap: 0;
+}
+
+.dungeon-sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
 }
 
 .actions-container {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 40px);
+  
 }
 
 .details {
@@ -19,7 +24,7 @@
 .game-panel.center {
   background-color: transparent;
   border: 0;
-  padding: 0.5rem;
+  padding: 0;
 }
 
 .dungeon-container {

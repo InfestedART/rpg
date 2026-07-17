@@ -17,7 +17,7 @@ const Tile = ({ terrain, status, piece, onClick }: TileProps) => {
       case 'ally': label = 'A'; break;
       case 'enemy': label = 'E'; break;
       case 'obstacle': label = 'X'; break;
-      case 'object': label = 'O'; break;
+      case 'chest': label = 'C'; break;
       case 'empty': 
       default: label = '';
     }

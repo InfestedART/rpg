@@ -23,7 +23,7 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 4px solid rgba(0, 156, 47, 0.5);
+  border: 4px solid rgb(0, 221, 66);
 }
 
 .tile.in-range::after {
@@ -34,9 +34,11 @@
   border: 4px solid rgba(0, 0, 0, 0.2);
 }
 
-.tile.grass { background-color: #6fa76a; }
-.tile.water { background-color: #9ae2ff; }
-.tile.land { background-color: #d3bb87; }
+.tile.grass { background-color: #4a7e46; }
+.tile.water { background-color: #59cff3; }
+.tile.land { background-color: #b9814b; }
+.tile.stone { background-color: #7c7c7c; }
 
-.tile.player { color: white}
-.tile.enemy { color: red}
+.tile.player { color: white; text-shadow: -1px 0 black, 0 1px black;}
+.tile.enemy { color: red; text-shadow: 1px 0 black, 0 1px black; }
+.tile.chest { color: #ffae18; text-shadow: 1px 0 black, 0 1px black; }

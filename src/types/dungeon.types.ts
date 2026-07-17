@@ -1,5 +1,8 @@
-export type TileContent = 'player' | 'ally' | 'enemy' | 'obstacle' | 'object' | 'empty';
-export type TileTerrain = 'land' | 'grass' | 'water'; // add others
+export type TileContent = 'player' | 'ally' | 'enemy' | 'obstacle' | 'chest' | 'button' | 'empty';
+export type TileTerrain = 'land' | 'stone' | 'grass' | 'water'; // add others
+
+export type UnitType = Extract<TileContent, 'player' | 'ally' | 'enemy'>
+export type ObjectType = Extract<TileContent, 'chest' | 'button'>
 
 export interface Position {
   row: number;
@@ -13,21 +16,31 @@ export interface Tile {
 
 export type Board = Tile[][];
 
-export type PieceStatus = 'alive' | 'death' | 'removed'
+export type PieceStatus = 'alive' | 'dead' | 'removed'  // buff, debuff?
 
-export interface Player {
-  name: string,
+type Piece = {
   type: TileContent,
-  status: PieceStatus,
+  position: Position
 }
 
-export interface DungeonState {
-  players: Record<number, Player>;
-  size: string;   // DungeonSize
+export type InitialBoard = Record<number, Piece>
+
+export interface Unit {
+  name: string,
+  type: UnitType,
+  // status: PieceStatus,
+  currentHp: number,
+  position: Position
+}
+
+export interface Object {
+  type: TileContent,
+  position: Position,
 }
 
 export interface GameState {
-  positions: Record<number, Position>;
+  units: Record<number, Unit>;
+  objects?: Record<number, Object>;
   currentPlayer: number;
   movesLeft: number;
 }

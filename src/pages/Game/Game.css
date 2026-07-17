@@ -1,7 +1,7 @@
 .main-game {
-  margin: 2rem auto;
+  margin: 1.5rem auto;
   padding: 1rem;
-  width: min(1080px, 100% - 3rem);
+  width: min(996px, 100% - 3rem);
   background-color: var(--bg-secondary);
   border-radius: 10px;
 
@@ -10,9 +10,9 @@
 }
 
 .game-container {
-  display: grid;
-  grid-template-columns: 1fr 3fr;
-  gap: 1rem;
+  width: 800px;
+  margin: 0 auto;
+  padding: 0.5rem 0;
 }
 
 .game-panel {

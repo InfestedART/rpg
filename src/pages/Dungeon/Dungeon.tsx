@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import { clsx } from 'clsx';
 import { useCharacterStore } from '@/store/characterStore';
 import useDungeonEngine from './useDungeonEngine';
@@ -14,7 +13,6 @@ const Dungeon = () => {
   const navigate = useNavigate();
   const { board, boardRef, nextTurn, gameState, selectedTile, handleTileClick } = useDungeonEngine();
   const { selectedCharacter } = useCharacterStore();
-  const [leftOpen, setLeftOpen] = useState<boolean>(true)
   if (!selectedCharacter) return
 
   return (
@@ -23,31 +21,25 @@ const Dungeon = () => {
         <h1 className='page-title'> DUNGEON </h1>
       </header>
 
-      <Sidebar side='left' isOpen={leftOpen}>
-        SIDEBAR
-      </Sidebar>
-      
-      <div className='main-container'>
-
-        <aside className='game-panel left'>
-          <h2>ACTIONS</h2>
+      <Sidebar side='left' isOpen={true} title='ACTIONS'>
+        <div className='dungeon-sidebar'>
           <div className='actions-container'>
-            <div className='details'>
-              <div>{selectedCharacter?.name}</div>          
-              <div>Equipment: <br/> {selectedCharacter?.equipment}</div>
-            </div>
-            <div className='buttons'>
-              <Button variant='secondary' size='md' disabled={gameState.movesLeft > 0} onClick={nextTurn}>
+              <div>Name: {selectedCharacter?.name}</div>          
+              <div>Equipment: <br/> {selectedCharacter?.equipment}</div>              
+          </div>
+          <div className='buttons-container'>
+              <Button variant='secondary' size='md' onClick={nextTurn}>
                 Finish Turn
               </Button>
               <Button variant='primary' onClick={() => navigate('/game')} className='mt-4' size='md'>
                 Leave Dungeon
               </Button>
             </div>
-          </div>
-        </aside>
+        </div>
+      </Sidebar>
+      
+      <div className='main-container'>
 
-        <aside className='game-panel center'>
           <div
             className='dungeon-container'
             ref={boardRef}
@@ -61,7 +53,7 @@ const Dungeon = () => {
               {board.map((row, rowIndex) => (
                 <div key={rowIndex} className='flex'>
                   {row.map((col, colIndex) => {
-                    const currentPlayerPosition = gameState.positions[gameState.currentPlayer]
+                    const currentPlayerPosition = gameState.units[gameState.currentPlayer].position;
                     const isActive = currentPlayerPosition.col === colIndex && currentPlayerPosition.row === rowIndex;
                     const isSelected = selectedTile?.row === rowIndex && selectedTile.col === colIndex;
                     const cls = clsx({
@@ -85,14 +77,12 @@ const Dungeon = () => {
               ))}
             </div>
 
-          </div>
-        </aside>
-
-        <aside className='game-panel rigth'>
-          <h2>DETAILS</h2> 
-        </aside>
+        </div>
 
       </div>
+
+      <Sidebar side='right' isOpen={true} title='DETAILS'>
+      </Sidebar>
     </div>
   )
 }

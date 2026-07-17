@@ -1,7 +1,6 @@
 
 
-import { Outlet } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { faHome } from '@fortawesome/free-solid-svg-icons';
 
 import type { NavbarButton } from "./Navbar/Navbar";
@@ -27,10 +26,8 @@ const Layout = ({}: LayoutProps) => {
       <div className="layout h-screen w-full flex flex-col">
         <Navbar navButtons={navbarButtons}  />
 
-        <main className="flex-1 w-full p-6 overflow-auto">
-          <div className='layout-container'>
+        <main className="layout-container">
             <Outlet />
-          </div>
         </main>
       </div>
     )

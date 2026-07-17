@@ -19,13 +19,13 @@ export const DUNGEON_SIZE: Record<string, number> = {
 export const DUNGEON_TYPE: string[] = [ 'fields', 'cave', 'dungeon']
 
 export const DUNGEON_SIZE_OPTIONS: SelectOption[] = [
-  { label: '6', value: 'sm'},
-  { label: '8', value: 'md'},
-  { label: '10', value: 'lg'},
+  { label: '6', value: 'xs'},
+  { label: '8', value: 'sm'},
+  { label: '10', value: 'md'},
 ]
 
 export const DUNGEON_TYPE_OPTIONS: SelectOption[] = [
-  { label: 'Fields', value: 'field'},
-  { label: 'Cave', value: 'cave'},
-  { label: 'Dungeon', value: 'dungeon'},
+  { label: 'Fields', value: 'grass'},
+  { label: 'Cave', value: 'land'},
+  { label: 'Dungeon', value: 'stone'},
 ]

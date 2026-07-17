@@ -3,45 +3,18 @@ import type { Board, GameState, Position } from "@/types/dungeon.types";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useDungeonStore } from '@/store/dungeonStore';
 import { useCharacterStore } from "@/store/characterStore";
-import { CLASS_STATS } from "@/constants/classOptions";
-
-// todo: move these functions to utils folder
-const buildDungeon = (size: number, initialPosition: Position, enemyPosition: Position) => {
-  const board: Board = Array(size).fill({ content: 'empty', terrain: 'land'}).map(
-    () => Array(size).fill({ content: 'empty', terrain: 'land'})
-  );
-  board[initialPosition.row][initialPosition.col] = {content: 'player', terrain: 'land'}
-  board[enemyPosition.row][enemyPosition.col] = {content: 'enemy', terrain: 'land'}
-  return board;
-}
-
-const inititalizeGameState = (): GameState => {
-  const { dungeonSize, initialPosition } = useDungeonStore();
-  const { selectedCharacter } = useCharacterStore();
-  const playerStats = selectedCharacter ? CLASS_STATS[selectedCharacter.class] : null;
-  const enemyPosition: Position = { row: DUNGEON_SIZE[dungeonSize]-1, col: DUNGEON_SIZE[dungeonSize]-1}
-  return {
-    positions: {
-      1: initialPosition,
-      2: enemyPosition
-    },
-    currentPlayer: 1,
-    movesLeft: playerStats?.moveSpeed || 0,
-  }
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
+import { buildDungeon, clamp, inititalizeGameState } from "@/utils/dungeon.utils";
 
 const useDungeonEngine = () => {
-  const { dungeonSize, initialPosition } = useDungeonStore();
-  const enemyPosition: Position = { row: DUNGEON_SIZE[dungeonSize]-1, col: DUNGEON_SIZE[dungeonSize]-1}
+  const { dungeonSize, dungeonType, initialBoard } = useDungeonStore();
+  const { selectedCharacter } = useCharacterStore();
 
   const [selectedTile, setselectedTile] = useState<Position | null>(null)
-  const [gameState, setGameState] = useState<GameState>(inititalizeGameState())
+  const [gameState, setGameState] = useState<GameState>(
+    inititalizeGameState(selectedCharacter, initialBoard)
+  )
   const [board, setBoard] = useState<Board>(
-    buildDungeon(DUNGEON_SIZE[dungeonSize || 'md'], initialPosition, enemyPosition)
+    buildDungeon(DUNGEON_SIZE[dungeonSize || 'md'], dungeonType, initialBoard)
   );
   
   const boardRef = useRef<HTMLDivElement>(null);
@@ -51,8 +24,9 @@ const useDungeonEngine = () => {
   }
 
   const nextTurn = useCallback(() => {
-    const playerCount = Object.keys(gameState.positions).length;
-    const nextPlayer = (gameState.currentPlayer % playerCount) + 1;
+    const playerCount = Object.keys(gameState.units).length;
+    let nextPlayer = (gameState.currentPlayer % playerCount) + 1;
+    console.log('==> gameState', gameState)
 
     setGameState({
       ...gameState,
@@ -64,7 +38,7 @@ const useDungeonEngine = () => {
 
   const movePlayer = useCallback((pos: Position) => {
     const currentPlayer = gameState.currentPlayer;
-    const currentPosition = gameState.positions[currentPlayer];
+    const currentPosition = gameState.units[currentPlayer].position;
     
     const newBoard = board.map(r => [...r]);
     const newPosition: Position = {
@@ -88,10 +62,13 @@ const useDungeonEngine = () => {
     setGameState({
       ...gameState,
       movesLeft: gameState.movesLeft - 1,
-      positions: {
-        ...gameState.positions,
-        [currentPlayer]: newPosition
-      }
+      units: {
+        ...gameState.units,
+        [currentPlayer]: {
+          ...gameState.units[currentPlayer],
+          position: newPosition,
+        }
+      },
     })
   }, [gameState])
 
