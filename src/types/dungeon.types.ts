@@ -1,5 +1,5 @@
 export type TileContent = 'player' | 'ally' | 'enemy' | 'obstacle' | 'chest' | 'button' | 'empty';
-export type TileTerrain = 'land' | 'stone' | 'grass' | 'water'; // add others
+export type TileTerrain = 'land' | 'stone' | 'grass' | 'water'; 
 
 export type UnitType = Extract<TileContent, 'player' | 'ally' | 'enemy'>
 export type ObjectType = Extract<TileContent, 'chest' | 'button'>
@@ -29,6 +29,7 @@ export interface Unit {
   name: string,
   type: UnitType,
   // status: PieceStatus,
+  class: string,  // TODO: add type for class
   currentHp: number,
   position: Position
 }
@@ -43,6 +44,7 @@ export interface GameState {
   objects?: Record<number, Object>;
   currentPlayer: number;
   movesLeft: number;
+  attacksLeft: number;
 }
 
 export type ActionType = 'attack' | 'interact';

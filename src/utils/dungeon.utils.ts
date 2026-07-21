@@ -1,4 +1,5 @@
 import { CLASS_STATS } from "@/constants/classOptions";
+import { ENEMY_STATS } from "@/constants/enemy.constants";
 import type { CharacterType } from "@/types/characterTypes";
 import type { Board, GameState, InitialBoard, TileTerrain, Unit, Object, Position } from "@/types/dungeon.types";
 
@@ -10,7 +11,8 @@ export const inititalizeGameState = (
   selectedCharacter: CharacterType | null,
   initialBoard: InitialBoard,
 ): GameState => {
-  const playerStats = selectedCharacter ? CLASS_STATS[selectedCharacter.class] : null;
+  const ALL_STATS = { ...CLASS_STATS, ...ENEMY_STATS }
+  const playerStats = selectedCharacter ? ALL_STATS[selectedCharacter.class] : null;
   const units: Record<number, Unit> = {}
   const objects: Record<number, Object> = {}
 
@@ -19,6 +21,7 @@ export const inititalizeGameState = (
       units[Number(key)] = {
         name: value.type === 'player' && selectedCharacter ? selectedCharacter.name : `enemy_${key}`,
         type: value.type,
+        class: selectedCharacter ? selectedCharacter.class : 'classless',
         currentHp: value.type === 'player' ? 15 : 6,
         position: initialBoard[Number(key)].position
       }    
@@ -36,6 +39,7 @@ export const inititalizeGameState = (
     objects,
     currentPlayer: 1,
     movesLeft: playerStats?.moveSpeed || 5,
+    attacksLeft: playerStats?.attackCount || 1,
   } 
 }
 

@@ -1,5 +1,11 @@
 .main-container {
+  overflow-y: auto;
   gap: 0;
+}
+
+.dungeon-title {
+  font-size: 22px;
+  margin: 0.4rem auto;
 }
 
 .dungeon-sidebar {
@@ -36,4 +42,8 @@
 
 .dungeon {
   margin: 1rem 0
+}
+
+.red-text {
+  color: red;
 }

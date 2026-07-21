@@ -27,14 +27,17 @@ const Dungeon = () => {
   const { selectedCharacter } = useCharacterStore();
   if (!selectedCharacter) return
 
-  const activePlayer = gameState.units[gameState.currentPlayer]
-  const objectsInBoard = gameState.objects && Object.values(gameState.objects)
-  const unitsInBoard = gameState.units && Object.values(gameState.units)
-  const enemiesInBoard = Object.values(unitsInBoard).filter(unit => unit.type === 'enemy')
+  const activePlayer = gameState.units[gameState.currentPlayer];
+  const playerIsHuman = activePlayer.type === 'player'|| activePlayer.type === 'ally'
+  const objectsInBoard = gameState.objects && Object.values(gameState.objects);
+  const unitsInBoard = gameState.units && Object.values(gameState.units);
+  const enemiesInBoard = playerIsHuman
+    ? Object.values(unitsInBoard).filter(unit => unit.type === 'enemy')
+    : Object.values(unitsInBoard).filter(unit => unit.type === 'player' || unit.type === 'ally')
 
-  // console.log('==> gameState', enemiesInBoard, validTargets)
+  // console.log('==> gameState', enemiesInBoard)
 
-  //@TODO:  move this to utils o engine
+  //@TODO:  move this to utils or engine
   const objectsInRange = validTargets.filter(target =>
     objectsInBoard?.some(
       obj =>
@@ -57,7 +60,7 @@ const Dungeon = () => {
   return (
     <div className='main-game'>
       <header className='page-header'>
-        <h1 className='page-title'> DUNGEON </h1>
+        <h1 className='page-title dungeon-title'> DUNGEON </h1>
       </header>
 
       <Sidebar side='left' isOpen={true} title='ACTIONS'>
@@ -66,6 +69,12 @@ const Dungeon = () => {
               <div>Name: {activePlayer?.name}</div>          
               <div>HP: {activePlayer.currentHp}</div>
               <div>Position: {activePlayer.position.col}, {activePlayer.position.row}</div>
+              <div className={gameState.movesLeft < 1 ? 'red-text' : ''}>
+                Moves Left: {gameState.movesLeft}
+              </div>
+              <div className={gameState.attacksLeft < 1 ? 'red-text' : ''}>
+                Attacks Left: {gameState.attacksLeft}
+              </div>
           </div>
           <div className='buttons-container'>
             {objectsInRange > 0 && (
@@ -82,7 +91,7 @@ const Dungeon = () => {
             {enemiesInRange > 0 && (
               <Button
                 variant='secondary'
-                disabled={interacting}
+                disabled={interacting || gameState.attacksLeft < 1}
                 className='mt-2'
                 size='md'
                 onClick={() => attackAction()}
@@ -101,15 +110,12 @@ const Dungeon = () => {
       </Sidebar>
       
       <div className='main-container'>
-
           <div
             className='dungeon-container'
             ref={boardRef}
             tabIndex={0}
             aria-label="Game Dungeon — use arrow keys to move the piece"
           >
-            <div className='m-0 p-0'>Moves Left: {gameState.movesLeft}</div>
-
             <div className='dungeon'>
               {board.map((row, rowIndex) => (
                 <div key={rowIndex} className='flex'>
@@ -118,9 +124,10 @@ const Dungeon = () => {
                     const isActive = currentPlayerPosition.col === colIndex && currentPlayerPosition.row === rowIndex;
                     const isSelected = selectedTile?.row === rowIndex && selectedTile.col === colIndex;
                     const inRange = validTargets.some(target => target.row === rowIndex && target.col === colIndex);
-                    const isValid = 
-                      (interacting && (col.content === 'button' || col.content === 'chest')) ||
-                      (attacking && (col.content === 'enemy'))
+
+                    const canInteract = interacting && (col.content === 'button' || col.content === 'chest');
+                    const canAttack = attacking && (playerIsHuman ? col.content === 'enemy' : (col.content === 'player' || col.content === 'ally'))
+                    const isValid = canInteract || canAttack;
 
                     const cls = clsx({
                       active: isActive,

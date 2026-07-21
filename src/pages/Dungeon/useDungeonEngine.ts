@@ -28,8 +28,13 @@ const useDungeonEngine = () => {
   }
 
   const isEnemy = (pos: Position) => {
+    const activePlayer = gameState.units[gameState.currentPlayer];
+    const playerIsHuman = activePlayer.type === 'player'|| activePlayer.type === 'ally'
     const unitsInBoard = gameState.units && Object.values(gameState.units)
-    const enemiesInBoard = Object.values(unitsInBoard).filter(unit => unit.type === 'enemy')
+    const enemiesInBoard = playerIsHuman
+      ? Object.values(unitsInBoard).filter(unit => unit.type === 'enemy')
+      : Object.values(unitsInBoard).filter(unit => unit.type === 'player' || unit.type === 'ally')
+
     return enemiesInBoard.some(
       enemy => enemy.position.col === pos.col && enemy.position.row === pos.row
     )
@@ -109,10 +114,13 @@ const useDungeonEngine = () => {
     const targets = getTargetsInRange(gameState.units[nextPlayer].position, nextPlayer);
 
     setValidTargets(targets);
+    setAttacking(false);
+    setInteracting(false);
     setGameState({
       ...gameState,
       currentPlayer: nextPlayer,
       movesLeft: 5,
+      attacksLeft: 1,
     })     
     boardRef.current?.focus();
   }, [gameState])
