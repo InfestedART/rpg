@@ -45,3 +45,4 @@ export interface GameState {
   movesLeft: number;
 }
 
+export type ActionType = 'attack' | 'interact';

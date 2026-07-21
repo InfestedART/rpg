@@ -11,9 +11,48 @@ import Sidebar from '@/components/Layout/Sidebar';
 
 const Dungeon = () => {
   const navigate = useNavigate();
-  const { board, boardRef, nextTurn, gameState, selectedTile, handleTileClick } = useDungeonEngine();
+  const {
+    board,
+    boardRef,
+    nextTurn,
+    gameState,
+    selectedTile,
+    validTargets,
+    handleAction,
+    cancelAction,
+    interacting,
+    attacking,
+    handleTileClick
+  } = useDungeonEngine();
   const { selectedCharacter } = useCharacterStore();
   if (!selectedCharacter) return
+
+  const activePlayer = gameState.units[gameState.currentPlayer]
+  const objectsInBoard = gameState.objects && Object.values(gameState.objects)
+  const unitsInBoard = gameState.units && Object.values(gameState.units)
+  const enemiesInBoard = Object.values(unitsInBoard).filter(unit => unit.type === 'enemy')
+
+  // console.log('==> gameState', enemiesInBoard, validTargets)
+
+  //@TODO:  move this to utils o engine
+  const objectsInRange = validTargets.filter(target =>
+    objectsInBoard?.some(
+      obj =>
+        obj.position.col === target.col &&
+        obj.position.row === target.row
+    )
+  ).length;
+
+  const enemiesInRange = validTargets.filter(target =>
+    enemiesInBoard?.some(
+      obj =>
+        obj.position.col === target.col &&
+        obj.position.row === target.row
+    )
+  ).length;
+
+  const interactAction = () => interacting ? cancelAction() : handleAction('interact');
+  const attackAction = () => attacking ? cancelAction() : handleAction('attack');
 
   return (
     <div className='main-game'>
@@ -24,17 +63,40 @@ const Dungeon = () => {
       <Sidebar side='left' isOpen={true} title='ACTIONS'>
         <div className='dungeon-sidebar'>
           <div className='actions-container'>
-              <div>Name: {selectedCharacter?.name}</div>          
-              <div>Equipment: <br/> {selectedCharacter?.equipment}</div>              
+              <div>Name: {activePlayer?.name}</div>          
+              <div>HP: {activePlayer.currentHp}</div>
+              <div>Position: {activePlayer.position.col}, {activePlayer.position.row}</div>
           </div>
           <div className='buttons-container'>
-              <Button variant='secondary' size='md' onClick={nextTurn}>
-                Finish Turn
+            {objectsInRange > 0 && (
+              <Button
+                variant='secondary'
+                disabled={attacking}
+                className='mt-2'
+                size='md'
+                onClick={() => interactAction()}
+              >
+                {interacting ? 'Cancel Action' : 'Interact'}
               </Button>
-              <Button variant='primary' onClick={() => navigate('/game')} className='mt-4' size='md'>
-                Leave Dungeon
+            )}
+            {enemiesInRange > 0 && (
+              <Button
+                variant='secondary'
+                disabled={interacting}
+                className='mt-2'
+                size='md'
+                onClick={() => attackAction()}
+                >
+                {attacking ? 'Cancel Attack' : 'Attack'}
               </Button>
-            </div>
+            )}   
+            <Button variant='secondary' className='mt-2' size='md' onClick={nextTurn}>
+              Finish Turn
+            </Button>
+            <Button variant='primary' onClick={() => navigate('/game')} className='mt-4' size='md'>
+               Leave Dungeon
+            </Button>
+          </div>
         </div>
       </Sidebar>
       
@@ -46,7 +108,6 @@ const Dungeon = () => {
             tabIndex={0}
             aria-label="Game Dungeon — use arrow keys to move the piece"
           >
-            <div className='m-0 p-0'>Current Player: {gameState.currentPlayer}</div>
             <div className='m-0 p-0'>Moves Left: {gameState.movesLeft}</div>
 
             <div className='dungeon'>
@@ -56,11 +117,17 @@ const Dungeon = () => {
                     const currentPlayerPosition = gameState.units[gameState.currentPlayer].position;
                     const isActive = currentPlayerPosition.col === colIndex && currentPlayerPosition.row === rowIndex;
                     const isSelected = selectedTile?.row === rowIndex && selectedTile.col === colIndex;
+                    const inRange = validTargets.some(target => target.row === rowIndex && target.col === colIndex);
+                    const isValid = 
+                      (interacting && (col.content === 'button' || col.content === 'chest')) ||
+                      (attacking && (col.content === 'enemy'))
+
                     const cls = clsx({
                       active: isActive,
                       selected: isSelected,
+                      ['in-range']: inRange,
+                      valid: inRange && isValid,
                     },
-                      // col.terrain,
                       col.content
                     )
                     return (

@@ -1,19 +1,19 @@
 import { CLASS_STATS } from "@/constants/classOptions";
 import type { CharacterType } from "@/types/characterTypes";
-import type { Board, GameState, InitialBoard, TileTerrain, Unit, Object } from "@/types/dungeon.types";
+import type { Board, GameState, InitialBoard, TileTerrain, Unit, Object, Position } from "@/types/dungeon.types";
 
-export function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
+export const isInBounds = (pos: Position, size: number) => (
+  pos.row >= 0 && pos.row < size && pos.col >= 0 && pos.col < size
+);
 
 export const inititalizeGameState = (
   selectedCharacter: CharacterType | null,
   initialBoard: InitialBoard,
 ): GameState => {
   const playerStats = selectedCharacter ? CLASS_STATS[selectedCharacter.class] : null;
-
   const units: Record<number, Unit> = {}
   const objects: Record<number, Object> = {}
+
   for (const [key, value] of Object.entries(initialBoard)) {
     if (value.type === 'player' || value.type === 'enemy' || value.type === 'ally') {
       units[Number(key)] = {
@@ -51,7 +51,7 @@ export const buildDungeon = (
   for (const value of Object.values(initialBoard)) {   
     board[Number(value.position.row)][Number(value.position.col)] = {
       content: value.type,
-      terrain: dungeonType
+      terrain: dungeonType,
     }
   }
 

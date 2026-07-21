@@ -43,7 +43,8 @@ const Game = () => {
   const navigate = useNavigate();
 
   const [ selectedAction, setSelectedAction ] = useState<string>('stats');
-  const [ enemyAmout, setEnemyAmount ] = useState<number>(Object.keys(initialBoard).length - 1);
+  const enemyCount =  Object.values(initialBoard).filter(({ type }) => ['enemy'].includes(type)).length;
+  const [ enemyAmout, setEnemyAmount ] = useState<number>(enemyCount || 1);
 
   const getActions = () => actions.map(action => (
     <Button

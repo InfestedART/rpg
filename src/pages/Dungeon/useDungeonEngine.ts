@@ -1,9 +1,10 @@
 import { DIRECTION_MAP, DUNGEON_SIZE } from "@/constants/dungeon.contants";
-import type { Board, GameState, Position } from "@/types/dungeon.types";
+import type { ActionType, Board, GameState, Position } from "@/types/dungeon.types";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useDungeonStore } from '@/store/dungeonStore';
 import { useCharacterStore } from "@/store/characterStore";
-import { buildDungeon, clamp, inititalizeGameState } from "@/utils/dungeon.utils";
+import { buildDungeon, inititalizeGameState, isInBounds } from "@/utils/dungeon.utils";
+import { clamp } from "@/utils/utils";
 
 const useDungeonEngine = () => {
   const { dungeonSize, dungeonType, initialBoard } = useDungeonStore();
@@ -16,23 +17,103 @@ const useDungeonEngine = () => {
   const [board, setBoard] = useState<Board>(
     buildDungeon(DUNGEON_SIZE[dungeonSize || 'md'], dungeonType, initialBoard)
   );
+  const [validTargets, setValidTargets] = useState<Position[]>([])
+  const [interacting, setInteracting] = useState<boolean>(false)
+  const [attacking, setAttacking] = useState<boolean>(false)
   
   const boardRef = useRef<HTMLDivElement>(null);
 
-  const handleTileClick = (pos: Position) => {
-    setselectedTile({row: pos.row, col: pos.col});
+  const isValidTarget = (pos: Position) => {
+    return validTargets.some(target => target.col === pos.col && target.row === pos.row);
   }
+
+  const isEnemy = (pos: Position) => {
+    const unitsInBoard = gameState.units && Object.values(gameState.units)
+    const enemiesInBoard = Object.values(unitsInBoard).filter(unit => unit.type === 'enemy')
+    return enemiesInBoard.some(
+      enemy => enemy.position.col === pos.col && enemy.position.row === pos.row
+    )
+  }
+
+  const isObject = (pos: Position) => {
+    const objectsInBoard = gameState.objects && Object.values(gameState.objects)
+    return objectsInBoard?.some(
+      obj => obj.position.col === pos.col && obj.position.row === pos.row
+    )
+  }
+
+  const handleTileClick = (pos: Position) => {
+    if (attacking && isValidTarget(pos) && isEnemy(pos)) {
+      handleAttack();
+    } else if (interacting && isValidTarget(pos) && isObject(pos)) {
+      handleInteract();
+    } else {
+      setselectedTile({row: pos.row, col: pos.col});
+    }
+  }
+
+  const handleAction = (action: ActionType) => {
+    setselectedTile(null)
+    if (action === 'interact') setInteracting(true)
+      else if (action === 'attack') setAttacking(true)
+  }
+
+  const cancelAction = () => {
+    setInteracting(false);
+    setAttacking(false);
+  }
+
+  const handleAttack = () => {
+    console.log('==> ATTACK')
+    setAttacking(false);
+  }
+
+  const handleInteract = () => {
+    console.log('==> OPEN')
+    setInteracting(false);
+  }
+
+  const getTargetsInRange = ({ row, col }: Position, player: number) => {
+    // const attackRange = 1;  // temporal value
+    // const interactRange = 1;
+    const directions = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]];
+    const filteredDirections = directions.filter(([dirRow, dirCol]) => {
+      return isInBounds({ row: row + dirRow, col: col + dirCol}, DUNGEON_SIZE[dungeonSize])
+    })
+    const unitRange: Position[] = filteredDirections.map(([dirRow, dirCol]) => {
+      return {
+         row: row + dirRow,
+         col: col + dirCol,
+      };
+    })
+
+    const targets: Position[] = [];
+    const activeUnit = gameState.units[player].type; 
+    const legalTargets: string[] = [];
+    if (activeUnit === 'player' || activeUnit === 'ally') legalTargets.push('enemy', 'chest', 'button');
+    if (activeUnit === 'enemy') legalTargets.push('player', 'ally'); 
+     
+    unitRange.forEach((pos) => {
+      const potencialTarget = board[pos.row][pos.col].content;
+      if (legalTargets.includes(potencialTarget))  {
+        targets.push(pos);
+      }
+    })
+
+    return targets;
+  };
 
   const nextTurn = useCallback(() => {
     const playerCount = Object.keys(gameState.units).length;
-    let nextPlayer = (gameState.currentPlayer % playerCount) + 1;
-    console.log('==> gameState', gameState)
+    const nextPlayer = (gameState.currentPlayer % playerCount) + 1;
+    const targets = getTargetsInRange(gameState.units[nextPlayer].position, nextPlayer);
 
+    setValidTargets(targets);
     setGameState({
       ...gameState,
       currentPlayer: nextPlayer,
       movesLeft: 5,
-    }) 
+    })     
     boardRef.current?.focus();
   }, [gameState])
 
@@ -49,6 +130,8 @@ const useDungeonEngine = () => {
     const isOccupied = board[newPosition.row][newPosition.col].content !== 'empty'
     if (isOccupied) return
 
+    const targets = getTargetsInRange(newPosition, currentPlayer);
+
     newBoard[currentPosition.row][currentPosition.col] = {
       ...board[currentPosition.row][currentPosition.col],
       content: 'empty'
@@ -59,6 +142,9 @@ const useDungeonEngine = () => {
     };
 
     setBoard(newBoard);
+    setValidTargets(targets);
+    setAttacking(false);
+    setInteracting(false);
     setGameState({
       ...gameState,
       movesLeft: gameState.movesLeft - 1,
@@ -73,7 +159,7 @@ const useDungeonEngine = () => {
   }, [gameState])
 
   const handleKeyDown = useCallback((ev: KeyboardEvent) => {
-    if (DIRECTION_MAP[ev.key] && gameState.movesLeft > 0) {
+    if (DIRECTION_MAP[ev.key] && gameState.movesLeft > 0 && !attacking && !interacting) {
       ev.preventDefault();
       movePlayer(DIRECTION_MAP[ev.key])
     }
@@ -90,7 +176,19 @@ const useDungeonEngine = () => {
     boardRef.current?.focus();
   }, []);
 
-  return { board, gameState, nextTurn, selectedTile, handleTileClick, boardRef };
+  return {
+    board,
+    gameState,
+    nextTurn,
+    selectedTile,
+    interacting,
+    attacking,
+    handleAction,
+    cancelAction,
+    handleTileClick,
+    validTargets,
+    boardRef
+  };
 } 
 
 export default useDungeonEngine;
