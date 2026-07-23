@@ -7,6 +7,7 @@ import Tile from './Tile';
 
 import './Dungeon.css';
 import Sidebar from '@/components/Layout/Sidebar';
+import { ALL_STATS } from '@/constants/classOptions';
 
 
 const Dungeon = () => {
@@ -35,9 +36,8 @@ const Dungeon = () => {
     ? Object.values(unitsInBoard).filter(unit => unit.type === 'enemy')
     : Object.values(unitsInBoard).filter(unit => unit.type === 'player' || unit.type === 'ally')
 
-  // console.log('==> gameState', enemiesInBoard)
+  // console.log('==> gameState', gameState)
 
-  //@TODO:  move this to utils or engine
   const objectsInRange = validTargets.filter(target =>
     objectsInBoard?.some(
       obj =>
@@ -67,8 +67,9 @@ const Dungeon = () => {
         <div className='dungeon-sidebar'>
           <div className='actions-container'>
               <div>Name: {activePlayer?.name}</div>          
-              <div>HP: {activePlayer.currentHp}</div>
+              <div>HP: {activePlayer.currentHp}/{ALL_STATS[activePlayer.class].baseHp} </div>
               <div>Position: {activePlayer.position.col}, {activePlayer.position.row}</div>
+              <div>Attack Damage: {ALL_STATS[activePlayer.class].baseDmg} </div>
               <div className={gameState.movesLeft < 1 ? 'red-text' : ''}>
                 Moves Left: {gameState.movesLeft}
               </div>

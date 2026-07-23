@@ -1,3 +1,5 @@
+import type { CharClassType, EnemyClassType } from "./characterTypes";
+
 export type TileContent = 'player' | 'ally' | 'enemy' | 'obstacle' | 'chest' | 'button' | 'empty';
 export type TileTerrain = 'land' | 'stone' | 'grass' | 'water'; 
 
@@ -20,7 +22,8 @@ export type PieceStatus = 'alive' | 'dead' | 'removed'  // buff, debuff?
 
 type Piece = {
   type: TileContent,
-  position: Position
+  position: Position,
+  class?: CharClassType | EnemyClassType,
 }
 
 export type InitialBoard = Record<number, Piece>
@@ -28,23 +31,26 @@ export type InitialBoard = Record<number, Piece>
 export interface Unit {
   name: string,
   type: UnitType,
-  // status: PieceStatus,
-  class: string,  // TODO: add type for class
+  class: CharClassType | EnemyClassType,  // TODO: add type for class
   currentHp: number,
-  position: Position
+  // buffs: Buff[],
+  position: Position,
+  // loot?: Loot  // on enemy defeat
 }
 
-export interface Object {
+export interface UsableObject {
   type: TileContent,
   position: Position,
+  // loot?: Loot
 }
 
 export interface GameState {
   units: Record<number, Unit>;
-  objects?: Record<number, Object>;
+  objects?: Record<number, UsableObject>;
   currentPlayer: number;
   movesLeft: number;
   attacksLeft: number;
+  // bonusActionsLeft: number; ?
 }
 
 export type ActionType = 'attack' | 'interact';

@@ -4,22 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { useDungeonStore } from '@/store/dungeonStore';
 import Button from '@/components/Button';
 import Select from '@/components/Select';
-import CharStats from './CharStats';
+import CharStats from './PlayerStats';
 import './Game.css';
 
 import { DUNGEON_SIZE, DUNGEON_SIZE_OPTIONS, DUNGEON_TYPE_OPTIONS } from '@/constants/dungeon.contants';
 import Sidebar from '@/components/Layout/Sidebar';
 import Input from '@/components/Input';
 import type { InitialBoard, Position, TileTerrain } from '@/types/dungeon.types';
+import { useCharacterStore } from '@/store/characterStore';
+import type { EnemyClassType } from '@/types/characterTypes';
 
 // TODO: move these to constants
-const initialPlayerPos: InitialBoard = {
-  1: {
-      type: 'player',
-      position: { row: 0, col: 0}
-    }
-  }
-
 const actions = [
   {
     value: 'stats',
@@ -40,11 +35,20 @@ const Game = () => {
     initialBoard,
     setInitialBoard
   } = useDungeonStore();
+  const { selectedCharacter } = useCharacterStore();
   const navigate = useNavigate();
 
   const [ selectedAction, setSelectedAction ] = useState<string>('stats');
   const enemyCount =  Object.values(initialBoard).filter(({ type }) => ['enemy'].includes(type)).length;
   const [ enemyAmout, setEnemyAmount ] = useState<number>(enemyCount || 1);
+
+  const initialPlayerPos: InitialBoard = {
+  1: {
+      type: 'player',
+      class: selectedCharacter?.class ?? "dummy",
+      position: { row: 0, col: 0 }
+    }
+  }
 
   const getActions = () => actions.map(action => (
     <Button
@@ -72,8 +76,9 @@ const Game = () => {
   }
 
   const updateBoardState = (size: number, amount: number) => {  
-    const createEnemy = (pos: Position) => ({
+    const createEnemy = (pos: Position, enemyClass: EnemyClassType) => ({
       type: 'enemy',
+      class: enemyClass,
       position: pos,
     })
 
@@ -86,16 +91,16 @@ const Game = () => {
 
     const boards: Record<number, Record<number, InitialBoard>> = {
       1: {
-        2: createEnemy({ row: size-1, col: size-1 })
+        2: createEnemy({ row: size-1, col: size-1 }, 'brigand')
       },
       2: {
-        2: createEnemy({ row: size-1, col: Math.floor(size/2)-1 }),
-        3: createEnemy({ row: Math.floor(size/2)-1, col: size-1 }),
+        2: createEnemy({ row: size-1, col: Math.floor(size/2)-1 }, 'skeleton'),
+        3: createEnemy({ row: Math.floor(size/2)-1, col: size-1 }, 'skeleton'),
       },
       3: {
-        2: createEnemy({ row: size-1, col: 0 }),
-        3: createEnemy({ row: 0, col: size-1 }),
-        4: createEnemy({ row: size-1, col: size-1 }),
+        2: createEnemy({ row: size-1, col: 0 }, 'rat'),
+        3: createEnemy({ row: 0, col: size-1 }, 'rat'),
+        4: createEnemy({ row: size-1, col: size-1 }, 'rat'),
       }
     }
 

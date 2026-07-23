@@ -1,6 +1,6 @@
 export type CharClassType = 'soldier' | 'wizard' | 'ranger' | 'warrior' | 'bandit';
-
-export type EnemyClassType = 'brigand' | 'skeleton' | 'rat';
+export type EnemyClassType = 'brigand' | 'skeleton' | 'rat' | 'dummy';
+// export type AllyClassType = ''
 
 export type CharacterType = {
   id: number,

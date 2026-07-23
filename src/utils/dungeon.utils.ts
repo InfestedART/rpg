@@ -1,7 +1,6 @@
-import { CLASS_STATS } from "@/constants/classOptions";
-import { ENEMY_STATS } from "@/constants/enemy.constants";
+import { ALL_STATS } from "@/constants/classOptions";
 import type { CharacterType } from "@/types/characterTypes";
-import type { Board, GameState, InitialBoard, TileTerrain, Unit, Object, Position } from "@/types/dungeon.types";
+import type { Board, GameState, InitialBoard, TileTerrain, Unit, Position, UsableObject, UnitType } from "@/types/dungeon.types";
 
 export const isInBounds = (pos: Position, size: number) => (
   pos.row >= 0 && pos.row < size && pos.col >= 0 && pos.col < size
@@ -11,18 +10,18 @@ export const inititalizeGameState = (
   selectedCharacter: CharacterType | null,
   initialBoard: InitialBoard,
 ): GameState => {
-  const ALL_STATS = { ...CLASS_STATS, ...ENEMY_STATS }
   const playerStats = selectedCharacter ? ALL_STATS[selectedCharacter.class] : null;
   const units: Record<number, Unit> = {}
-  const objects: Record<number, Object> = {}
+  const objects: Record<number, UsableObject> = {}
 
   for (const [key, value] of Object.entries(initialBoard)) {
     if (value.type === 'player' || value.type === 'enemy' || value.type === 'ally') {
+      const unitStats = ALL_STATS[value.class || 'dummy']
       units[Number(key)] = {
-        name: value.type === 'player' && selectedCharacter ? selectedCharacter.name : `enemy_${key}`,
+        name: value.type === 'player' && selectedCharacter ? selectedCharacter.name : `${value.class || 'enemy'}_${key}`,
         type: value.type,
-        class: selectedCharacter ? selectedCharacter.class : 'classless',
-        currentHp: value.type === 'player' ? 15 : 6,
+        class: value.class || 'dummy',
+        currentHp: unitStats.baseHp,
         position: initialBoard[Number(key)].position
       }    
     }
@@ -60,4 +59,37 @@ export const buildDungeon = (
   }
 
   return board;
+}
+
+export const getPieceId = (
+  pos: Position,
+  pieceList: Record<number, Unit | UsableObject>
+): number | undefined => {
+    for (const [id, piece] of Object.entries(pieceList)) {
+      if (piece.position.col === pos.col && piece.position.row === pos.row) {
+        return Number(id);
+      }
+    }
+    return undefined;
+}
+
+export const isValidTarget = (pos: Position, targetList: Position[]) => {
+  return targetList.some(target => target.col === pos.col && target.row === pos.row);
+}
+
+export const isEnemy = (pos: Position, unitList: Unit[], unitType: UnitType): boolean => {
+  const playerIsHuman = unitType === 'player'|| unitType === 'ally';
+  const enemiesInBoard = playerIsHuman
+    ? Object.values(unitList).filter(unit => unit.type === 'enemy')
+    : Object.values(unitList).filter(unit => unit.type === 'player' || unit.type === 'ally')
+
+  return enemiesInBoard.some(
+    enemy => enemy.position.col === pos.col && enemy.position.row === pos.row
+  )
+}
+
+export const isObject = (pos: Position, objectList: UsableObject[] | undefined): boolean => {
+  return objectList ? objectList.some(
+    obj => obj.position.col === pos.col && obj.position.row === pos.row
+  ) : false
 }

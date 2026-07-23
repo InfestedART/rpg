@@ -1,15 +1,19 @@
 import { DIRECTION_MAP, DUNGEON_SIZE } from "@/constants/dungeon.contants";
-import type { ActionType, Board, GameState, Position } from "@/types/dungeon.types";
+import type { ActionType, Board, GameState, UsableObject, Position, Unit, UnitType } from "@/types/dungeon.types";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useDungeonStore } from '@/store/dungeonStore';
 import { useCharacterStore } from "@/store/characterStore";
-import { buildDungeon, inititalizeGameState, isInBounds } from "@/utils/dungeon.utils";
+import { buildDungeon, getPieceId, inititalizeGameState, isEnemy, isInBounds, isObject, isValidTarget } from "@/utils/dungeon.utils";
 import { clamp } from "@/utils/utils";
+import { ALL_STATS } from "@/constants/classOptions";
+
 
 const useDungeonEngine = () => {
+  // stores
   const { dungeonSize, dungeonType, initialBoard } = useDungeonStore();
   const { selectedCharacter } = useCharacterStore();
 
+  // state
   const [selectedTile, setselectedTile] = useState<Position | null>(null)
   const [gameState, setGameState] = useState<GameState>(
     inititalizeGameState(selectedCharacter, initialBoard)
@@ -23,34 +27,16 @@ const useDungeonEngine = () => {
   
   const boardRef = useRef<HTMLDivElement>(null);
 
-  const isValidTarget = (pos: Position) => {
-    return validTargets.some(target => target.col === pos.col && target.row === pos.row);
-  }
-
-  const isEnemy = (pos: Position) => {
-    const activePlayer = gameState.units[gameState.currentPlayer];
-    const playerIsHuman = activePlayer.type === 'player'|| activePlayer.type === 'ally'
-    const unitsInBoard = gameState.units && Object.values(gameState.units)
-    const enemiesInBoard = playerIsHuman
-      ? Object.values(unitsInBoard).filter(unit => unit.type === 'enemy')
-      : Object.values(unitsInBoard).filter(unit => unit.type === 'player' || unit.type === 'ally')
-
-    return enemiesInBoard.some(
-      enemy => enemy.position.col === pos.col && enemy.position.row === pos.row
-    )
-  }
-
-  const isObject = (pos: Position) => {
-    const objectsInBoard = gameState.objects && Object.values(gameState.objects)
-    return objectsInBoard?.some(
-      obj => obj.position.col === pos.col && obj.position.row === pos.row
-    )
-  }
+  const activePlayer = gameState.units[gameState.currentPlayer];
+  const unitsInBoard = gameState.units && Object.values(gameState.units);
+  const objectsInBoard = gameState.objects && Object.values(gameState.objects);
+  
+  // console.log('==> initialState', gameState);
 
   const handleTileClick = (pos: Position) => {
-    if (attacking && isValidTarget(pos) && isEnemy(pos)) {
-      handleAttack();
-    } else if (interacting && isValidTarget(pos) && isObject(pos)) {
+    if (attacking && isValidTarget(pos, validTargets) && isEnemy(pos, unitsInBoard, activePlayer.type)) {
+      handleAttack(pos);
+    } else if (interacting && isValidTarget(pos, validTargets) && isObject(pos, objectsInBoard)) {
       handleInteract();
     } else {
       setselectedTile({row: pos.row, col: pos.col});
@@ -68,9 +54,41 @@ const useDungeonEngine = () => {
     setAttacking(false);
   }
 
-  const handleAttack = () => {
-    console.log('==> ATTACK')
+  const handleAttack = (pos: Position) => {
+    const targetUnitId = getPieceId(pos, gameState.units);
+    if (!targetUnitId) {
+      console.error('==> No Target Unit');
+      return;
+    }
+    const targetUnit = gameState.units[targetUnitId]
+    const attackerStats = ALL_STATS[activePlayer.class]
+
+    const remainingHp = targetUnit.currentHp - attackerStats.baseDmg
+    const { [targetUnitId]: removed, ...remainingUnits } = gameState.units
+    const newUnitList = remainingHp <= 0 ? remainingUnits : {
+      ...gameState.units,
+      [targetUnitId]: {
+        ...targetUnit,
+        currentHp: remainingHp
+      }
+    }
+    if (remainingHp <= 0) {
+       const newBoard = board.map(r => [...r]);
+      newBoard[targetUnit.position.row][targetUnit.position.col] = {
+        ...board[targetUnit.position.row][targetUnit.position.col],
+        content: 'empty'
+      };
+      setBoard(newBoard);
+    }
+
+    console.log(`==> ${activePlayer.name} attacks ${targetUnit.name} for ${attackerStats.baseDmg} dmg`);
     setAttacking(false);
+    setGameState({
+      ...gameState,
+      attacksLeft: gameState.attacksLeft - 1,
+      units: newUnitList
+    })
+    boardRef.current?.focus();
   }
 
   const handleInteract = () => {
@@ -109,18 +127,22 @@ const useDungeonEngine = () => {
   };
 
   const nextTurn = useCallback(() => {
-    const playerCount = Object.keys(gameState.units).length;
-    const nextPlayer = (gameState.currentPlayer % playerCount) + 1;
-    const targets = getTargetsInRange(gameState.units[nextPlayer].position, nextPlayer);
+    const unitsIds = Object.keys(gameState.units);
+    const currentId = unitsIds.indexOf(String(gameState.currentPlayer));
+    let next = Number(unitsIds[(currentId+1) % unitsIds.length]);
+
+    const nextUnit = gameState.units[next];
+    const targets = getTargetsInRange(nextUnit.position, next);
+    const nextUnitStats = ALL_STATS[nextUnit.class]
 
     setValidTargets(targets);
     setAttacking(false);
     setInteracting(false);
     setGameState({
       ...gameState,
-      currentPlayer: nextPlayer,
-      movesLeft: 5,
-      attacksLeft: 1,
+      currentPlayer: next,
+      movesLeft: nextUnitStats.moveSpeed,
+      attacksLeft: nextUnitStats.attackCount,
     })     
     boardRef.current?.focus();
   }, [gameState])
