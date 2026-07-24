@@ -1,7 +1,7 @@
 import type { CharClassType, EnemyClassType } from "./characterTypes";
 
-export type TileContent = 'player' | 'ally' | 'enemy' | 'obstacle' | 'chest' | 'button' | 'empty';
 export type TileTerrain = 'land' | 'stone' | 'grass' | 'water'; 
+export type TileContent = 'player' | 'ally' | 'enemy' | 'obstacle' | 'chest' | 'button' | 'empty';
 
 export type UnitType = Extract<TileContent, 'player' | 'ally' | 'enemy'>
 export type ObjectType = Extract<TileContent, 'chest' | 'button'>
@@ -50,6 +50,7 @@ export interface GameState {
   currentPlayer: number;
   movesLeft: number;
   attacksLeft: number;
+  bonusActionsLeft: number;
   // bonusActionsLeft: number; ?
 }
 

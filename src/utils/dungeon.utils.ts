@@ -1,6 +1,6 @@
 import { ALL_STATS } from "@/constants/classOptions";
 import type { CharacterType } from "@/types/characterTypes";
-import type { Board, GameState, InitialBoard, TileTerrain, Unit, Position, UsableObject, UnitType } from "@/types/dungeon.types";
+import type { Board, GameState, InitialBoard, TileTerrain, Unit, Position, UsableObject } from "@/types/dungeon.types";
 
 export const isInBounds = (pos: Position, size: number) => (
   pos.row >= 0 && pos.row < size && pos.col >= 0 && pos.col < size
@@ -39,6 +39,7 @@ export const inititalizeGameState = (
     currentPlayer: 1,
     movesLeft: playerStats?.moveSpeed || 5,
     attacksLeft: playerStats?.attackCount || 1,
+    bonusActionsLeft: playerStats?.bonusActions || 1,
   } 
 }
 
@@ -61,24 +62,74 @@ export const buildDungeon = (
   return board;
 }
 
-export const getPieceId = (
-  pos: Position,
-  pieceList: Record<number, Unit | UsableObject>
-): number | undefined => {
-    for (const [id, piece] of Object.entries(pieceList)) {
-      if (piece.position.col === pos.col && piece.position.row === pos.row) {
-        return Number(id);
-      }
-    }
-    return undefined;
+export const getUnitsInBoard = (gameState: GameState) => gameState.units && Object.values(gameState.units);
+export const getObjectsInBoard = (gameState: GameState) => gameState.objects && Object.values(gameState.objects);
+export const getEnemiesInBoard = (activePlayer: Unit, gameState: GameState) => {
+  const playerIsHuman = activePlayer.type === 'player'|| activePlayer.type === 'ally';
+  const unitsInBoard = getUnitsInBoard(gameState);
+  return playerIsHuman
+    ? Object.values(unitsInBoard).filter(unit => unit.type === 'enemy')
+    : Object.values(unitsInBoard).filter(unit => unit.type === 'player' || unit.type === 'ally')
 }
 
-export const isValidTarget = (pos: Position, targetList: Position[]) => {
-  return targetList.some(target => target.col === pos.col && target.row === pos.row);
+export const getObjectsInRange = (gameState: GameState, validTargets: Position[]) => {
+  const objectsInBoard = getObjectsInBoard(gameState);
+  return validTargets.filter(target =>
+    objectsInBoard?.some(
+      obj =>
+        obj.position.col === target.col &&
+        obj.position.row === target.row
+    )
+  ).length;
 }
 
-export const isEnemy = (pos: Position, unitList: Unit[], unitType: UnitType): boolean => {
-  const playerIsHuman = unitType === 'player'|| unitType === 'ally';
+export const getEnemiesInRange = (activePlayer: Unit, gameState: GameState, validTargets: Position[]) => {
+  const enemiesInBoard = getEnemiesInBoard(activePlayer, gameState);
+  return validTargets.filter(target =>
+    enemiesInBoard?.some(
+      obj =>
+        obj.position.col === target.col &&
+        obj.position.row === target.row
+    )
+  ).length;
+}
+
+export const getUnitId = (pos: Position, gameState: GameState): number | undefined => {
+  for (const [id, piece] of Object.entries(gameState.units)) {
+    if (piece.position.col === pos.col && piece.position.row === pos.row) return Number(id);
+  }
+  return undefined;
+}
+
+export const getObjectId = (pos: Position, gameState: GameState): number | undefined => {
+  if (!gameState.objects) return undefined;
+  for (const [id, piece] of Object.entries(gameState.objects)) {
+    if (piece.position.col === pos.col && piece.position.row === pos.row) return Number(id);
+  }
+  return undefined;
+}
+
+export const isValidTarget = (pos: Position, validTargets: Position[]): boolean => {
+  return validTargets.some(target => target.col === pos.col && target.row === pos.row);
+}
+
+export const isPieceAnObject = (pos: Position, gameState: GameState): boolean => {
+  const objectList = getObjectsInBoard(gameState);
+  return objectList ? objectList.some(
+    obj => obj.position.col === pos.col && obj.position.row === pos.row
+  ) : false
+}
+
+export const isPieceAUnit =  (pos: Position, gameState: GameState): boolean => {
+  const unitList = getUnitsInBoard(gameState);
+  return unitList ? unitList.some(
+    obj => obj.position.col === pos.col && obj.position.row === pos.row
+  ) : false
+}
+
+export const isPieceAnEnemy = (pos: Position, gameState: GameState, activePlayer: Unit): boolean => {
+  const playerIsHuman = activePlayer.type === 'player'|| activePlayer.type === 'ally';
+  const unitList = getUnitsInBoard(gameState);
   const enemiesInBoard = playerIsHuman
     ? Object.values(unitList).filter(unit => unit.type === 'enemy')
     : Object.values(unitList).filter(unit => unit.type === 'player' || unit.type === 'ally')
@@ -86,10 +137,4 @@ export const isEnemy = (pos: Position, unitList: Unit[], unitType: UnitType): bo
   return enemiesInBoard.some(
     enemy => enemy.position.col === pos.col && enemy.position.row === pos.row
   )
-}
-
-export const isObject = (pos: Position, objectList: UsableObject[] | undefined): boolean => {
-  return objectList ? objectList.some(
-    obj => obj.position.col === pos.col && obj.position.row === pos.row
-  ) : false
 }

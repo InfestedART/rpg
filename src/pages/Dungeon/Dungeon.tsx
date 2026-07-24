@@ -1,61 +1,43 @@
 import { useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
+
 import { useCharacterStore } from '@/store/characterStore';
 import useDungeonEngine from './useDungeonEngine';
+
 import Button from '@/components/Button';
+import Sidebar from '@/components/Layout/Sidebar';
+import UnitStats from './UnitStats';
+import TileInfo from './TileInfo';
 import Tile from './Tile';
 
 import './Dungeon.css';
-import Sidebar from '@/components/Layout/Sidebar';
-import { ALL_STATS } from '@/constants/classOptions';
-
+import { getEnemiesInRange, getObjectsInRange } from '@/utils/dungeon.utils';
 
 const Dungeon = () => {
   const navigate = useNavigate();
   const {
     board,
     boardRef,
-    nextTurn,
+    finishTurn,
     gameState,
     selectedTile,
     validTargets,
     handleAction,
     cancelAction,
-    interacting,
-    attacking,
+    isInteracting,
+    isAttacking,
     handleTileClick
   } = useDungeonEngine();
   const { selectedCharacter } = useCharacterStore();
-  if (!selectedCharacter) return
+  if (!selectedCharacter) return null;
 
   const activePlayer = gameState.units[gameState.currentPlayer];
   const playerIsHuman = activePlayer.type === 'player'|| activePlayer.type === 'ally'
-  const objectsInBoard = gameState.objects && Object.values(gameState.objects);
-  const unitsInBoard = gameState.units && Object.values(gameState.units);
-  const enemiesInBoard = playerIsHuman
-    ? Object.values(unitsInBoard).filter(unit => unit.type === 'enemy')
-    : Object.values(unitsInBoard).filter(unit => unit.type === 'player' || unit.type === 'ally')
+  const objectsInRange = getObjectsInRange(gameState, validTargets)
+  const enemiesInRange = getEnemiesInRange(activePlayer, gameState, validTargets);
 
-  // console.log('==> gameState', gameState)
-
-  const objectsInRange = validTargets.filter(target =>
-    objectsInBoard?.some(
-      obj =>
-        obj.position.col === target.col &&
-        obj.position.row === target.row
-    )
-  ).length;
-
-  const enemiesInRange = validTargets.filter(target =>
-    enemiesInBoard?.some(
-      obj =>
-        obj.position.col === target.col &&
-        obj.position.row === target.row
-    )
-  ).length;
-
-  const interactAction = () => interacting ? cancelAction() : handleAction('interact');
-  const attackAction = () => attacking ? cancelAction() : handleAction('attack');
+  const interactAction = () => isInteracting ? cancelAction() : handleAction('interact');
+  const attackAction = () => isAttacking ? cancelAction() : handleAction('attack');
 
   return (
     <div className='main-game'>
@@ -66,42 +48,33 @@ const Dungeon = () => {
       <Sidebar side='left' isOpen={true} title='ACTIONS'>
         <div className='dungeon-sidebar'>
           <div className='actions-container'>
-              <div>Name: {activePlayer?.name}</div>          
-              <div>HP: {activePlayer.currentHp}/{ALL_STATS[activePlayer.class].baseHp} </div>
-              <div>Position: {activePlayer.position.col}, {activePlayer.position.row}</div>
-              <div>Attack Damage: {ALL_STATS[activePlayer.class].baseDmg} </div>
-              <div className={gameState.movesLeft < 1 ? 'red-text' : ''}>
-                Moves Left: {gameState.movesLeft}
-              </div>
-              <div className={gameState.attacksLeft < 1 ? 'red-text' : ''}>
-                Attacks Left: {gameState.attacksLeft}
-              </div>
+            <UnitStats unit={activePlayer} isActive={true} />
           </div>
           <div className='buttons-container'>
             {objectsInRange > 0 && (
               <Button
                 variant='secondary'
-                disabled={attacking}
+                disabled={isAttacking}
                 className='mt-2'
                 size='md'
                 onClick={() => interactAction()}
               >
-                {interacting ? 'Cancel Action' : 'Interact'}
+                {isInteracting ? '[C]ancel Action' : 'Us[E] Object'}
               </Button>
             )}
             {enemiesInRange > 0 && (
               <Button
                 variant='secondary'
-                disabled={interacting || gameState.attacksLeft < 1}
+                disabled={isInteracting || gameState.attacksLeft < 1}
                 className='mt-2'
                 size='md'
                 onClick={() => attackAction()}
                 >
-                {attacking ? 'Cancel Attack' : 'Attack'}
+                {isAttacking ? '[C]ancel Attack' : '[A]ttack'}
               </Button>
             )}   
-            <Button variant='secondary' className='mt-2' size='md' onClick={nextTurn}>
-              Finish Turn
+            <Button variant='secondary' className='mt-2' size='md' onClick={finishTurn}>
+              Finish [T]urn
             </Button>
             <Button variant='primary' onClick={() => navigate('/game')} className='mt-4' size='md'>
                Leave Dungeon
@@ -126,8 +99,10 @@ const Dungeon = () => {
                     const isSelected = selectedTile?.row === rowIndex && selectedTile.col === colIndex;
                     const inRange = validTargets.some(target => target.row === rowIndex && target.col === colIndex);
 
-                    const canInteract = interacting && (col.content === 'button' || col.content === 'chest');
-                    const canAttack = attacking && (playerIsHuman ? col.content === 'enemy' : (col.content === 'player' || col.content === 'ally'))
+                    const canInteract = isInteracting && (col.content === 'button' || col.content === 'chest');
+                    const canAttack = isAttacking && (
+                      playerIsHuman ? col.content === 'enemy' : (col.content === 'player' || col.content === 'ally')
+                    )
                     const isValid = canInteract || canAttack;
 
                     const cls = clsx({
@@ -157,6 +132,9 @@ const Dungeon = () => {
       </div>
 
       <Sidebar side='right' isOpen={true} title='DETAILS'>
+        {selectedTile && (
+          <TileInfo selectedTile={selectedTile} gameState={gameState} board={board} />
+        )}
       </Sidebar>
     </div>
   )

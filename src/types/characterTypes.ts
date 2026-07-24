@@ -9,5 +9,15 @@ export type CharacterType = {
   equipment: string,
   moveSpeed: number,
   attackCount: number,
+  bonusActions?: number,
   createdAt?: string,
+}
+
+export type UnitStats = {
+  baseDmg: number,
+  baseHp: number,
+  moveSpeed: number,
+  attackCount: number,
+  bonusActions?: number,
+  initiative: number,
 }
