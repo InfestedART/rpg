@@ -1,9 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+
 import { DIRECTION_MAP, DUNGEON_SIZE } from "@/constants/dungeon.contants";
 import { ALL_STATS } from "@/constants/classOptions";
 import type { ActionType, Board, GameState, Position } from "@/types/dungeon.types";
+
 import { useDungeonStore } from '@/store/dungeonStore';
 import { useCharacterStore } from "@/store/characterStore";
+
+import useMessageLog from "./MessageBox/useMessageLog";
+
 import { clamp } from "@/utils/utils";
 import {
   buildDungeon,
@@ -22,6 +27,7 @@ const useDungeonEngine = () => {
   // stores
   const { dungeonSize, dungeonType, initialBoard } = useDungeonStore();
   const { selectedCharacter } = useCharacterStore();
+  const { messages, sendMessage } = useMessageLog();
 
   // state
   const [selectedTile, setselectedTile] = useState<Position | null>(null)
@@ -79,22 +85,28 @@ const useDungeonEngine = () => {
         currentHp: remainingHp
       }
     }
+
+    const attackLog = `${activePlayer.name} attacks ${targetUnit.name} for ${attackerStats.baseDmg} dmg`
+    sendMessage(attackLog, 'info');
+    const newGameState = {
+      ...gameState,
+      attacksLeft: gameState.attacksLeft - 1,
+      units: newUnitList
+    }
+
     if (remainingHp <= 0) {
+      sendMessage(`${activePlayer.name} killed ${targetUnit.name}!`, 'important');
       const newBoard = board.map(r => [...r]);
       newBoard[targetUnit.position.row][targetUnit.position.col] = {
         ...board[targetUnit.position.row][targetUnit.position.col],
         content: 'empty'
       };
+      checkDungeonComplete(newGameState)
       setBoard(newBoard);
-    }
-
-    console.log(`==> ${activePlayer.name} attacks ${targetUnit.name} for ${attackerStats.baseDmg} dmg`);
+    }    
+    
     setIsAttacking(false);
-    setGameState({
-      ...gameState,
-      attacksLeft: gameState.attacksLeft - 1,
-      units: newUnitList
-    })
+    setGameState(newGameState)
     boardRef.current?.focus();
   }
 
@@ -111,16 +123,32 @@ const useDungeonEngine = () => {
       content: 'empty'
     };
     const { [targetObjId]: removed, ...remainingObjects } = gameState.objects
-
-    console.log('==> You found Nothing in the Chest', targetObject);  
-    setBoard(newBoard);
-    setIsInteracting(false);
-    setGameState({
+    const newGameState = {
       ...gameState,
       bonusActionsLeft: gameState.bonusActionsLeft - 1,
       objects: remainingObjects
-    })  
+    }
+
+    sendMessage('You found Nothing in the Chest', 'info');
+    checkDungeonComplete(newGameState)
+    setBoard(newBoard);
+    setIsInteracting(false);
+    setGameState(newGameState) ; 
     boardRef.current?.focus();
+  }
+
+  const checkDungeonComplete = (newGameState: GameState):boolean => {
+    const remainingPieces = { ...newGameState.units, ...newGameState.objects }
+    if (
+      Object.values(remainingPieces).length === 1 &&
+      Object.values(remainingPieces)[0].type === 'player'
+    ) {
+      sendMessage('Dungeon Complete', 'important');
+      return true
+    } 
+    else {
+      return false
+    }
   }
 
   const getTargetsInRange = ({ row, col }: Position, player: number) => {
@@ -270,7 +298,8 @@ const useDungeonEngine = () => {
     cancelAction,
     handleTileClick,
     validTargets,
-    boardRef
+    boardRef,
+    messages
   };
 } 
 

@@ -12,6 +12,8 @@ import Tile from './Tile';
 
 import './Dungeon.css';
 import { getEnemiesInRange, getObjectsInRange } from '@/utils/dungeon.utils';
+import MessageBox from './MessageBox';
+import SidebarSection from '@/components/Layout/Sidebar/SidebarSection';
 
 const Dungeon = () => {
   const navigate = useNavigate();
@@ -26,7 +28,8 @@ const Dungeon = () => {
     cancelAction,
     isInteracting,
     isAttacking,
-    handleTileClick
+    handleTileClick,
+    messages
   } = useDungeonEngine();
   const { selectedCharacter } = useCharacterStore();
   if (!selectedCharacter) return null;
@@ -39,6 +42,8 @@ const Dungeon = () => {
   const interactAction = () => isInteracting ? cancelAction() : handleAction('interact');
   const attackAction = () => isAttacking ? cancelAction() : handleAction('attack');
 
+  // console.log('==> messages', messages)
+
   return (
     <div className='main-game'>
       <header className='page-header'>
@@ -47,10 +52,10 @@ const Dungeon = () => {
 
       <Sidebar side='left' isOpen={true} title='ACTIONS'>
         <div className='dungeon-sidebar'>
-          <div className='actions-container'>
+          <SidebarSection title="PLAYER INFO">
             <UnitStats unit={activePlayer} isActive={true} />
-          </div>
-          <div className='buttons-container'>
+          </SidebarSection>
+          <SidebarSection title="ACTIONS">
             {objectsInRange > 0 && (
               <Button
                 variant='secondary'
@@ -79,7 +84,7 @@ const Dungeon = () => {
             <Button variant='primary' onClick={() => navigate('/game')} className='mt-4' size='md'>
                Leave Dungeon
             </Button>
-          </div>
+          </SidebarSection>
         </div>
       </Sidebar>
       
@@ -132,9 +137,19 @@ const Dungeon = () => {
       </div>
 
       <Sidebar side='right' isOpen={true} title='DETAILS'>
-        {selectedTile && (
-          <TileInfo selectedTile={selectedTile} gameState={gameState} board={board} />
-        )}
+        <div className='dungeon-sidebar'>
+          {selectedTile          
+            ? (
+              <SidebarSection title="Tile Info">
+                <TileInfo selectedTile={selectedTile} gameState={gameState} board={board} />
+              </SidebarSection>
+          ) : <div />
+          }
+          <SidebarSection title="Message Log">
+            <MessageBox messages={messages} />
+          </SidebarSection>
+          
+        </div>
       </Sidebar>
     </div>
   )
