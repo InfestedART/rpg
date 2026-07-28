@@ -76,7 +76,10 @@ const useDungeonEngine = () => {
     const targetUnit = gameState.units[targetUnitId]
     const attackerStats = ALL_STATS[activePlayer.class]
 
-    const remainingHp = targetUnit.currentHp - attackerStats.baseDmg
+    const criticalHit = Math.random() <= attackerStats.critChance;
+    const attackDmg = criticalHit ? attackerStats.baseDmg * 1.5 : attackerStats.baseDmg
+
+    const remainingHp = targetUnit.currentHp - attackDmg
     const { [targetUnitId]: removed, ...remainingUnits } = gameState.units
     const newUnitList = remainingHp <= 0 ? remainingUnits : {
       ...gameState.units,
@@ -86,8 +89,10 @@ const useDungeonEngine = () => {
       }
     }
 
-    const attackLog = `${activePlayer.name} attacks ${targetUnit.name} for ${attackerStats.baseDmg} dmg`
-    sendMessage(attackLog, 'info');
+    const attackLog = 
+      `${criticalHit ? 'CRITICAL HIT! ' : ''}` +
+      `${activePlayer.name} attacks ${targetUnit.name} for ${attackDmg} dmg`;
+    sendMessage(attackLog, criticalHit ? 'warning' : 'info');
     const newGameState = {
       ...gameState,
       attacksLeft: gameState.attacksLeft - 1,
@@ -139,6 +144,13 @@ const useDungeonEngine = () => {
 
   const checkDungeonComplete = (newGameState: GameState):boolean => {
     const remainingPieces = { ...newGameState.units, ...newGameState.objects }
+    const playerStillAlive = Object.values(remainingPieces).find(
+      piece => piece.type === 'player'
+    )
+    if (!playerStillAlive) {
+      sendMessage('GAME OVER, You Dead', 'error');
+      return true
+    }
     if (
       Object.values(remainingPieces).length === 1 &&
       Object.values(remainingPieces)[0].type === 'player'
@@ -194,6 +206,7 @@ const useDungeonEngine = () => {
       currentPlayer: next,
       movesLeft: nextUnitStats.moveSpeed,
       attacksLeft: nextUnitStats.attackCount,
+      bonusActionsLeft: nextUnitStats.bonusActions || 1,
     }
     if (nextUnit.type === 'enemy' || nextUnit.type === 'ally') {
       newGameState.bonusActionsLeft = 0;

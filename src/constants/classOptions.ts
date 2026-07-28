@@ -63,6 +63,7 @@ export const ARMOUR_BY_CLASS = {
 export const BASE_STATS = {
   attackCount: 1,
   bonusActions: 1,
+  critChance: 0.15
 }
 
 export const CLASS_STATS: Record<CharClassType, UnitStats> = {
@@ -74,10 +75,10 @@ export const CLASS_STATS: Record<CharClassType, UnitStats> = {
 }
 
 export const ENEMY_STATS: Record<EnemyClassType, UnitStats> = {
-  brigand: { baseDmg: 4, baseHp: 15, moveSpeed: 4, attackCount: 1, initiative: 3 },
-  skeleton: { baseDmg: 2, baseHp: 8, moveSpeed: 3, attackCount: 1, initiative: 2 }, 
-  rat: { baseDmg: 2, baseHp: 5, moveSpeed: 3, attackCount: 1, initiative: 2}, 
-  dummy: { baseDmg: 1, baseHp: 1, moveSpeed: 1, attackCount: 1, initiative: 1}, 
+  brigand: { baseDmg: 4, baseHp: 15, moveSpeed: 4, attackCount: 1, critChance: 0.15, initiative: 3 },
+  skeleton: { baseDmg: 2, baseHp: 8, moveSpeed: 3, attackCount: 1, critChance: 0.1, initiative: 2 }, 
+  rat: { baseDmg: 2, baseHp: 5, moveSpeed: 3, attackCount: 1, critChance: 0.1, initiative: 2}, 
+  dummy: { baseDmg: 1, baseHp: 1, moveSpeed: 1, attackCount: 1, critChance: 0, initiative: 1}, 
 }
 
 export const ALL_STATS: Record<CharClassType | EnemyClassType, UnitStats> = { ...CLASS_STATS, ...ENEMY_STATS}

@@ -25,7 +25,13 @@ const UnitInfo = ({ tilePosition, gameState }: PieceInfoProps) => {
   const unitId = getUnitId(tilePosition, gameState)
   if (!unitId) return null;
 
-  return <UnitStats unit={gameState.units[unitId]} isActive={false} />
+  return (
+    <UnitStats
+      unit={gameState.units[unitId]} 
+      gameState={gameState} 
+      isActive={false} 
+    />
+  )
 }
 
 const TileInfo = ({ selectedTile, gameState, board }: TileInfoProps ) => {  

@@ -53,7 +53,7 @@ const Dungeon = () => {
       <Sidebar side='left' isOpen={true} title='ACTIONS'>
         <div className='dungeon-sidebar'>
           <SidebarSection title="PLAYER INFO">
-            <UnitStats unit={activePlayer} isActive={true} />
+            <UnitStats unit={activePlayer} gameState={gameState} isActive={true} />
           </SidebarSection>
           <SidebarSection title="ACTIONS">
             {objectsInRange > 0 && (

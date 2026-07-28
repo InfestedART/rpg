@@ -17,7 +17,7 @@ const MessageBox = ({ messages }: MessageBoxProps) => {
   return (
     <div className='message-box'>
       {messages.map(msg => (
-        <div className={`message-log`} key={msg.timestamp}>
+        <div className={`message-log`} key={msg.timestamp + msg.message}>
           <span className='message-box__timestamp'>
             [{new Date(msg.timestamp).toLocaleTimeString()}]:{' '}
           </span>

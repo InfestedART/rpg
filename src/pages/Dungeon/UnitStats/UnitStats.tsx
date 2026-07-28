@@ -1,14 +1,13 @@
 import { ALL_STATS } from "@/constants/classOptions";
-import type { Unit } from "@/types/dungeon.types";
-import useDungeonEngine from "../useDungeonEngine";
+import type { GameState, Unit } from "@/types/dungeon.types";
 
 type UnitStatsProps = {
   unit: Unit,
+  gameState: GameState,
   isActive: boolean
 }
 
-const UnitStats = ({ unit, isActive }: UnitStatsProps) => {
-  const  { gameState } = useDungeonEngine();
+const UnitStats = ({ unit, gameState, isActive }: UnitStatsProps) => {
   return (
     <div>
       <div>Name: {unit.name}</div>          

@@ -20,4 +20,5 @@ export type UnitStats = {
   attackCount: number,
   bonusActions?: number,
   initiative: number,
+  critChance: number,
 }
