@@ -1,0 +1,8 @@
+.alert-container {
+    background: var(--bg-secondary);;
+    color: var(--text-main)
+}
+
+.alert-title {
+    color: var(--text-accent)
+}

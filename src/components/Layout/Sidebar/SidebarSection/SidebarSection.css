@@ -1,0 +1,24 @@
+.sidebar-section {
+  border: 1px solid var(--border-color, #999);
+  border-radius: 4px;
+  margin: 0 0 12px 0;
+  padding: 0 10px 10px;
+  min-width: 0; /* prevents fieldset's default overflow quirk */
+}
+
+.sidebar-section__title {
+  padding: 0 6px;
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted, #999);
+}
+
+.sidebar-section__content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}

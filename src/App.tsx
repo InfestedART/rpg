@@ -1,34 +1,33 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { Routes, Route } from 'react-router-dom';
+
+import Layout from './components/Layout';
+
+import TitleScreen from './pages/TitleScreen/TitleScreen'
+import NewChar from './pages/NewChar/NewChar'
+import LoadChar from './pages/LoadChar';
+import Game from './pages/Game';
+import Chess from './pages/Chess';
+import NotFound from './pages/NotFound';
+import Dungeon from './pages/Dungeon';
+import StoreRequired from './components/Layout/StoreRequired';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <Routes>
+      <Route path='/' element={<TitleScreen />} />
+      <Route element={<Layout />}>
+        <Route path='/newChar' element={<NewChar />} />
+        <Route path='/loadChar' element={<LoadChar />} />
+        <Route path='/chess' element={<Chess />} />
+        <Route path="*" element={<NotFound />} />
+
+        <Route element={<StoreRequired />}>
+          <Route path='/game' element={<Game />} />
+          <Route path='/dungeon' element={<Dungeon />} />
+        </Route>
+      </Route>
+    </Routes>    
   )
 }
 

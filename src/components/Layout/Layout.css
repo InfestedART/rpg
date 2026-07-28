@@ -1,0 +1,10 @@
+.layout {
+  align-items: center;
+}
+
+.layout-container {
+  display: flex;
+  margin-top: var(--navbar-height);
+  width: 100%;
+  height: calc(100vh - var(--navbar-height));
+}

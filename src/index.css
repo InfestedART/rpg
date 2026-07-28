@@ -1,17 +1,52 @@
+@import "tailwindcss";
+
+html, body {
+  height: 100%;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* variables */
+  --bg-main: #070d1d;
+  --bg-secondary: #161e38;
+  --bg-navbar: #2f3038;
+  --bg-panel: #3a3f46;
+  --text-main: #E6EDF3;
+  --text-warning: #e20a0a;
+  --bg-danger: #e20a0a;
+  --text-accent: #9D7CFF;
+  --bg-accent: #7049e6;
+  --bg-button: #4040D0;
+  --disabled: #6b7280;
+
+  --container-width: 1200px;
+  --navbar-height: 52px;
+  --sidebar-width: 260px;
 }
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+/* 
 
 a {
   font-weight: 500;
@@ -20,19 +55,6 @@ a {
 }
 a:hover {
   color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
 }
 
 button {
@@ -65,4 +87,5 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
-}
+} */
+

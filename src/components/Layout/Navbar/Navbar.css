@@ -1,0 +1,27 @@
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--bg-navbar);
+    height: var(--navbar-height);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: row;
+    padding: 0 16px;
+    z-index: 100;
+    /* align-items: center;
+    justify-content: space-between; */
+}
+
+.navbar-container {
+    margin: auto;
+    width: var(--container-width, 1280px);
+    display: flex;
+    justify-content: space-between;
+}
+
+.navbar-icons {
+  display: flex;
+  flex-direction: row;
+}

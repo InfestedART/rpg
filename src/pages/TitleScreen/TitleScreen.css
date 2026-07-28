@@ -1,0 +1,18 @@
+.main-screen {
+  height: 100%;
+  padding: 1rem;
+}
+
+.menu-container {
+  padding: 2rem;
+}
+
+.title-container {
+  margin: 1rem auto 10rem;
+}
+
+.panel {
+  background: var(--bg-panel);
+  padding: 2em;
+  border-radius: 10px;
+}

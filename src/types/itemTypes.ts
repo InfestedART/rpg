@@ -1,0 +1,1 @@
+export type WeaponType =  'sword' | 'spear' | 'long_spear' | 'mace' | 'staff' | 'focus' | 'bow' | 'dagger' | 'trowing_knife' | 'rapier' | 'long_sword' | 'hand_axe' | 'battle_axe' | 'heavy_mace' | 'crossbow'

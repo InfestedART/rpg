@@ -1,0 +1,40 @@
+.select-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.select-field__control {
+  position: relative;
+}
+
+.select {
+  padding: 0 2.5rem 0 0.75rem;
+  cursor: pointer;
+}
+
+.select--sm { height: 32px; }
+.select--md { height: 40px; }
+.select--lg { height: 48px; }
+
+.select:focus {
+  outline: none;
+  border-color: #7aa2ff;
+}
+
+.select--error {
+  border-color: #ff6b6b;
+}
+
+.select__chevron {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #888;
+}
+
+.select-field__error {
+  font-size: 0.75rem;
+  color: #ff6b6b;
+}

@@ -1,0 +1,35 @@
+.main-game {
+  margin: 1.5rem auto;
+  padding: 1rem;
+  width: min(996px, 100% - 3rem);
+  background-color: var(--bg-secondary);
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.game-container {
+  width: 800px;
+  margin: 0 auto;
+  padding: 0.5rem 0;
+}
+
+.game-panel {
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 14px;
+  padding: 1rem 0.6rem;
+  min-height: 500px;
+}
+
+.game-panel h2 {
+  font-weight: bold;
+  /* text-align: center; */
+  margin: 0.3rem auto 1rem;
+}
+
+.game-panel.center {
+  background-color: transparent;
+  border: 0;
+}

@@ -1,0 +1,42 @@
+.newchar {
+  margin: 3rem auto;
+  padding: 1rem;
+  width: min(1120px, calc(100% - 3rem));
+  background-color: var(--bg-secondary);
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.newchar-container {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  gap: 1rem;
+}
+
+.newchar-panel {
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 14px;
+  padding: 0.6rem 1rem;
+  min-height: 500px;
+}
+
+.newchar-panel h2 {
+  font-weight: bold;
+  /* text-align: center; */
+  margin: 0.3rem auto 1rem;
+}
+
+.newchar-panel.center {
+  background-color: transparent;
+  border: 0;
+}
+
+.newchar-footer {
+  display: flex;
+  justify-content: right;
+  margin: 1.2rem 0.8rem;
+}
+

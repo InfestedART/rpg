@@ -1,0 +1,29 @@
+.message-box {
+  height: 260px;
+  width: 100%;
+  background-color: var(--bg-main);
+  overflow-y: auto;
+  padding: 0.6rem;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.message-box__timestamp {
+  color: mediumpurple;
+}
+
+.message-box__msg {
+  color: white;
+}
+
+.message-box__msg.important {
+  color: lightgreen;
+}
+
+.message-box__msg.error {
+  color: red;
+}
+
+.message-box__msg.warning {
+  color: orange;
+}
