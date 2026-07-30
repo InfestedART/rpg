@@ -9,7 +9,7 @@ import { useCharacterStore } from "@/store/characterStore";
 
 import useMessageLog from "./MessageBox/useMessageLog";
 
-import { clamp } from "@/utils/utils";
+import { clamp, randomNumber } from "@/utils/utils";
 import {
   buildDungeon,
   getUnitId,
@@ -22,6 +22,7 @@ import {
   getObjectsInRange,
   getObjectId,
 } from "@/utils/dungeon.utils";
+import { addGoldToCharacter } from "@/api/characters";
 
 const useDungeonEngine = () => {
   // stores
@@ -134,7 +135,10 @@ const useDungeonEngine = () => {
       objects: remainingObjects
     }
 
-    sendMessage('You found Nothing in the Chest', 'info');
+    const goldAmount = randomNumber(1, 10) + 4;
+    selectedCharacter && addGoldToCharacter(selectedCharacter?.id, goldAmount) // add async?
+    sendMessage(`You found ${goldAmount} gold in the Chest`, 'info');
+
     checkDungeonComplete(newGameState)
     setBoard(newBoard);
     setIsInteracting(false);

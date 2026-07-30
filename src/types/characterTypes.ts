@@ -9,6 +9,7 @@ export type CharacterType = {
   equipment: string,
   moveSpeed: number,
   attackCount: number,
+  gold: number,
   bonusActions?: number,
   createdAt?: string,
 }

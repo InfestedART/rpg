@@ -9,6 +9,10 @@
   flex-direction: column;
 }
 
+.main-game.town {
+  margin: 1.5rem 1rem 1.5rem calc(var(--sidebar-width) + 1rem);
+}
+
 .game-container {
   width: 800px;
   margin: 0 auto;
