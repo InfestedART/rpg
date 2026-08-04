@@ -50,7 +50,10 @@ const Game = () => {
       const fetchCharacter = async () => {
         try {
           const char = await getCharacterById(selectedCharacterId)
-          setSelectedCharacter(char);
+          setSelectedCharacter({
+            ...char,
+            equipment: JSON.parse(char.equipment)
+          });
         } catch (err) {
           console.error('Failed to load character', err);
         }
