@@ -1,7 +1,7 @@
 import './NewChar.css'
 import CharacterForm from './CharacterForm'
 import { useGameStore } from '@/store/gameStore'
-import { CLASS_STATS } from "@/constants/classOptions";
+import { CLASS_STATS } from '@/constants/unitStats.constants';
 
 const NewChar = () => {
   const { currentClass } = useGameStore();

@@ -1,3 +1,4 @@
+import { STARTING_WEAPONS } from "@/constants/classOptions";
 import { characterSchema } from "@/schemas/character.schema";
 import type { z } from "zod";
 
@@ -16,20 +17,23 @@ export const getAllCharacters = async () => {
 }
 
 export const createCharacter = async (data: CharacterFormData) => {
-    const response = await fetch(baseUrl + '/characters', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  })
+  const newData = {
+    ...data,
+    equipment: JSON.stringify(STARTING_WEAPONS[data.equipment])
+  } 
+  const response = await fetch(baseUrl + '/characters', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(newData),
+})
 
-  if (!response.ok) {
-    throw new Error('Failed to save character');
-  }
+if (!response.ok) {
+  throw new Error('Failed to save character');
+}
 
-  return response.json()
-
+return response.json()
 }
 
 export const deleteCharacter = async (id: number) => {

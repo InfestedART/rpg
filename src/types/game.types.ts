@@ -5,3 +5,8 @@ export interface MessageLogType {
   timestamp: number;
   type: MsgType;
 }
+
+export type SelectOptions = {
+  label: string,
+  value: string | number,
+}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 import { DIRECTION_MAP, DUNGEON_SIZE } from "@/constants/dungeon.contants";
-import { ALL_STATS } from "@/constants/classOptions";
+
 import type { ActionType, Board, GameState, Position } from "@/types/dungeon.types";
 
 import { useDungeonStore } from '@/store/dungeonStore';
@@ -23,6 +23,7 @@ import {
   getObjectId,
 } from "@/utils/dungeon.utils";
 import { addGoldToCharacter } from "@/api/characters";
+import { ALL_STATS } from "@/constants/unitStats.constants";
 
 const useDungeonEngine = () => {
   // stores
@@ -78,7 +79,8 @@ const useDungeonEngine = () => {
     const attackerStats = ALL_STATS[activePlayer.class]
 
     const criticalHit = Math.random() <= attackerStats.critChance;
-    const attackDmg = criticalHit ? attackerStats.baseDmg * 1.5 : attackerStats.baseDmg
+    const baseDamage = attackerStats.baseDmg + randomNumber(1, attackerStats.dmgDice);
+    const attackDmg = criticalHit ? baseDamage * 1.5 : baseDamage
 
     const remainingHp = targetUnit.currentHp - attackDmg
     const { [targetUnitId]: removed, ...remainingUnits } = gameState.units
@@ -233,8 +235,10 @@ const useDungeonEngine = () => {
       col: clamp(currentPosition.col + pos.col, 0, DUNGEON_SIZE[dungeonSize]-1),
     }
 
-    const isOccupied = board[newPosition.row][newPosition.col].content !== 'empty'
-    if (isOccupied) return
+    const tempPosition = board[newPosition.row][newPosition.col] 
+    const isOccupied = tempPosition.content !== 'empty'
+    const isWalkable = tempPosition.terrain !== 'water' && tempPosition.terrain !== 'stone'
+    if (isOccupied || !isWalkable) return
 
     const targets = getTargetsInRange(newPosition, currentPlayer);
 

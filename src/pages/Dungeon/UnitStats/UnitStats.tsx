@@ -1,4 +1,4 @@
-import { ALL_STATS } from "@/constants/classOptions";
+import { ALL_STATS } from "@/constants/unitStats.constants";
 import type { GameState, Unit } from "@/types/dungeon.types";
 
 type UnitStatsProps = {
@@ -8,12 +8,13 @@ type UnitStatsProps = {
 }
 
 const UnitStats = ({ unit, gameState, isActive }: UnitStatsProps) => {
+  const stats = ALL_STATS[unit.class];
   return (
     <div>
       <div>Name: {unit.name}</div>          
       <div>Class: {unit.class}</div>
-      <div>HP: {unit.currentHp}/{ALL_STATS[unit.class].baseHp} </div>      
-      <div>Attack Damage: {ALL_STATS[unit.class].baseDmg} </div>
+      <div>HP: {unit.currentHp}/{stats.baseHp} </div>      
+      <div>Attack Damage: {stats.baseDmg + 1}-{stats.baseDmg + stats.dmgDice}</div> 
       {isActive && (
         <div className="mt-3">
           <div>Position: {unit.position.col}, {unit.position.row}</div>

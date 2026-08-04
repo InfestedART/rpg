@@ -1,6 +1,7 @@
-import { ALL_STATS } from "@/constants/classOptions";
+import { ALL_STATS } from "@/constants/unitStats.constants";
 import type { CharacterType } from "@/types/characterTypes";
 import type { Board, GameState, InitialBoard, TileTerrain, Unit, Position, UsableObject } from "@/types/dungeon.types";
+import { randomNumber } from "./utils";
 
 export const isInBounds = (pos: Position, size: number) => (
   pos.row >= 0 && pos.row < size && pos.col >= 0 && pos.col < size
@@ -43,6 +44,23 @@ export const inititalizeGameState = (
   } 
 }
 
+const addWaterToBoard = (dungeonSize: number, board: Board): Board => {
+  const waterDirection = randomNumber(1, 2);
+  if (waterDirection % 2 === 0) {
+    board[1][Math.floor(dungeonSize*0.67)] = {
+      content: board[1][Math.floor(dungeonSize*0.67)].content,
+      terrain: 'water'
+    }
+  } else {
+    board[Math.floor(dungeonSize*0.67)][1] = {
+      content: board[Math.floor(dungeonSize*0.67)][1].content,
+      terrain: 'water'
+    } 
+  }
+  
+  return board
+}
+
 export const buildDungeon = (
   dungeonSize: number,
   dungeonType: TileTerrain,
@@ -59,7 +77,8 @@ export const buildDungeon = (
     }
   }
 
-  return board;
+  const finalBoard = randomNumber(1, 2) % 2 === 0 ? addWaterToBoard(dungeonSize, board) : board
+  return finalBoard;
 }
 
 export const getUnitsInBoard = (gameState: GameState) => gameState.units && Object.values(gameState.units);

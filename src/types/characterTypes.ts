@@ -6,7 +6,7 @@ export type CharacterType = {
   id: number,
   name: string,
   class: CharClassType | EnemyClassType
-  equipment: string,
+  equipment: string[],
   moveSpeed: number,
   attackCount: number,
   gold: number,
@@ -16,6 +16,7 @@ export type CharacterType = {
 
 export type UnitStats = {
   baseDmg: number,
+  dmgDice: number,
   baseHp: number,
   moveSpeed: number,
   attackCount: number,

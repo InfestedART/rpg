@@ -4,7 +4,7 @@ import './SelectInput.css';
 
 export type SelectOption = {
   label: string,
-  value: string,
+  value: string | number,
 }
 
 type SelectSize = 'sm' | 'md' | 'lg';

@@ -1,29 +1,14 @@
-import type { CharClassType, EnemyClassType, UnitStats } from "@/types/characterTypes"
+import type { SelectOptions } from "@/types/game.types"
 
-export const CLASS_OPTIONS = [
-  {
-    label: 'Soldier',
-    value: 'soldier'
-  },
-  {
-    label: 'Wizard',
-    value: 'wizard'
-  },
-  {
-    label: 'Ranger',
-    value: 'ranger'
-  },
-  {
-    label: 'Warrior',
-    value: 'warrior'
-  },
-  {
-    label: 'Bandit',
-    value: 'bandit'
-  }
+export const CLASS_OPTIONS: SelectOptions[] = [
+  { label: 'Soldier', value: 'soldier' },
+  { label: 'Wizard',  value: 'wizard' },
+  { label: 'Ranger',  value: 'ranger' },
+  { label: 'Warrior', value: 'warrior' },
+  { label: 'Bandit', value: 'bandit' },
 ]
 
- export const WEAPONS_BY_CLASS = {
+ export const WEAPONS_BY_CLASS: Record<string, SelectOptions[]> = {
   soldier: [
     { value: 'sword_shield', label: 'Sword and Shield' },
     { value: 'spear_shield', label: 'Spear and Shield' },
@@ -43,16 +28,16 @@ export const CLASS_OPTIONS = [
     { value: '2h_sword', label: 'Two handed Sword' },
     { value: 'battle_axe', label: 'Battle Axe' },
     { value: '2h_mace', label: 'Two handed Mace' },
-    { value: 'dual_weapons', label: 'Dual Melee Weapons' },
+    // { value: 'dual_weapons', label: 'Dual Melee Weapons' },
   ],
   bandit: [
-    { value: '1h_crossbow', label: 'One handed Crossbow'},
+    { value: 'crossbow', label: 'One handed Crossbow'},
     { value: 'cloak_dagger', label: 'Cloak and Dagger'},
     { value: 'dual_daggers', label: 'Dual daggers' },
   ]
 }
 
-export const ARMOUR_BY_CLASS = {
+export const ARMOUR_BY_CLASS: Record<string, SelectOptions>  = {
   soldier: { value: 'chainmail', label: 'Chainmail'},
   wizard: { value: 'padded', label: 'Padded Armour'},
   ranger: { value: 'robes', label: 'Acolyte Robes'},
@@ -60,25 +45,19 @@ export const ARMOUR_BY_CLASS = {
   bandit: { value: 'leather', label: 'Leather Armorr'},
 }
 
-export const BASE_STATS = {
-  attackCount: 1,
-  bonusActions: 1,
-  critChance: 0.15
+ export const STARTING_WEAPONS: Record<string, string[]> = {
+  sword_shield: ['sword_0', 'shield_0'],
+  spear_shield: ['spear_0', 'shield_0'],
+  mace_shield: ['mace_0', 'shield_0'],
+  staff: ['staff_0'],
+  spellbook_focus: ['spellbook_0', 'focus_0'],
+  bow_arrows: ['bow_0', 'quiver_0'],
+  dual_daggers: ['dagger_0', 'dagger_0'],
+  trowing_knives: ['t-knives_0', 'cloak_0'],
+  sword_rapier: ['sword_0', 'rapier_0'],
+  '2h_sword': ['longsword_0'],
+  battle_axe: ['longaxe_0'],
+  '2h_mace': ['longmace_0'],
+  crossbow: ['crossbow_0'],
+  cloak_dagger: ['dagger_0', 'cloak_0'],
 }
-
-export const CLASS_STATS: Record<CharClassType, UnitStats> = {
-  soldier: { baseDmg: 3, baseHp: 23, moveSpeed: 4, initiative: 3, ...BASE_STATS }, // total: 14
-  wizard: { baseDmg: 6, baseHp: 15, moveSpeed: 3, initiative: 6, ...BASE_STATS }, // total: 13
-  ranger: { baseDmg: 4, baseHp: 18, moveSpeed: 5, initiative: 4, ...BASE_STATS }, // total: 14
-  warrior: { baseDmg: 6, baseHp: 20, moveSpeed: 4, initiative: 3, ...BASE_STATS }, // total: 15
-  bandit: { baseDmg: 4, baseHp: 18, moveSpeed: 5, initiative: 5, ...BASE_STATS }, // total: 15
-}
-
-export const ENEMY_STATS: Record<EnemyClassType, UnitStats> = {
-  brigand: { baseDmg: 4, baseHp: 15, moveSpeed: 4, attackCount: 1, critChance: 0.15, initiative: 3 },
-  skeleton: { baseDmg: 2, baseHp: 8, moveSpeed: 3, attackCount: 1, critChance: 0.1, initiative: 2 }, 
-  rat: { baseDmg: 2, baseHp: 5, moveSpeed: 3, attackCount: 1, critChance: 0.1, initiative: 2}, 
-  dummy: { baseDmg: 1, baseHp: 1, moveSpeed: 1, attackCount: 1, critChance: 0, initiative: 1}, 
-}
-
-export const ALL_STATS: Record<CharClassType | EnemyClassType, UnitStats> = { ...CLASS_STATS, ...ENEMY_STATS}

@@ -7,7 +7,7 @@ type PlayerStatsProps = {
 
 const PlayerStats = ({ selectedCharacter }: PlayerStatsProps) => {
   if (!selectedCharacter) return null;
-  // console.log('==> selectedCharacter:', selectedCharacter);
+  console.log('==> selectedCharacter:', selectedCharacter);
 
   return (
     <div>
