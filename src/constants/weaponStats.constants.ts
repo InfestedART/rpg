@@ -1,6 +1,18 @@
 import type { WeaponStatsType } from "@/types/itemTypes";
 
 export const WEAPON_STATS: Record<string, WeaponStatsType> = {
+  'unarmed': {
+    baseDmg: 0,
+    dmgDice: 0,
+    name: 'Unarmed',
+    damageType: 'blunt',
+    quantityAllowed: 2,
+    weight: '1H',
+    itemClass: 'fist',
+    itemType: 'weapon',
+    rarity: 'common',
+    bonusCritChance: 0,
+  },
   'sword_0': {
     baseDmg: 3,
     dmgDice: 5,

@@ -8,11 +8,11 @@ export const BASE_STATS = {
 }
 
 export const CLASS_STATS: Record<CharClassType, UnitStats> = {
-  soldier: { baseDmg: 3, baseHp: 22, moveSpeed: 4, initiative: 3, ...BASE_STATS }, // total: 14
-  wizard: { baseDmg: 1, baseHp: 15, moveSpeed: 3, initiative: 6, ...BASE_STATS }, // total: 13
-  ranger: { baseDmg: 2, baseHp: 18, moveSpeed: 5, initiative: 4, ...BASE_STATS }, // total: 14
-  warrior: { baseDmg: 3, baseHp: 20, moveSpeed: 4, initiative: 3, ...BASE_STATS }, // total: 15
-  bandit: { baseDmg: 2, baseHp: 18, moveSpeed: 5, initiative: 5, ...BASE_STATS }, // total: 15
+  soldier: { baseDmg: 2, baseHp: 22, moveSpeed: 4, initiative: 3, ...BASE_STATS }, // total: 14
+  wizard: { baseDmg: 0, baseHp: 15, moveSpeed: 3, initiative: 6, ...BASE_STATS }, // total: 13
+  ranger: { baseDmg: 1, baseHp: 18, moveSpeed: 5, initiative: 4, ...BASE_STATS }, // total: 14
+  warrior: { baseDmg: 2, baseHp: 20, moveSpeed: 4, initiative: 3, ...BASE_STATS }, // total: 15
+  bandit: { baseDmg: 1, baseHp: 18, moveSpeed: 5, initiative: 5, ...BASE_STATS }, // total: 15
 }
 
 export const ENEMY_STATS: Record<EnemyClassType, UnitStats> = {

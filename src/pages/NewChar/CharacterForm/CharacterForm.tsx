@@ -8,7 +8,7 @@ import SelectInput from "@/components/Form/SelectInput";
 
 import { characterSchema } from "@/schemas/character.schema";
 import { createCharacter } from "@/api/characters";
-import { CLASS_OPTIONS, STARTING_WEAPONS, WEAPONS_BY_CLASS } from "@/constants/classOptions";
+import { CLASS_OPTIONS, WEAPONS_BY_CLASS } from "@/constants/classOptions";
 import type { CharClassType } from "@/types/characterTypes";
 
 import { useNavigate } from 'react-router-dom';

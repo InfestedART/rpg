@@ -1,5 +1,9 @@
 import { ALL_STATS } from "@/constants/unitStats.constants";
+import SingleStat from "@/pages/Game/SingleStat";
+// import EquipmentStats from "@/pages/Game/EquipmentStats";
+import { useCharacterStore } from "@/store/characterStore";
 import type { GameState, Unit } from "@/types/dungeon.types";
+import { capitalize } from "@/utils/utils";
 
 type UnitStatsProps = {
   unit: Unit,
@@ -9,12 +13,32 @@ type UnitStatsProps = {
 
 const UnitStats = ({ unit, gameState, isActive }: UnitStatsProps) => {
   const stats = ALL_STATS[unit.class];
+  const { selectedCharacter } = useCharacterStore();
+
+  const isPlayer = unit.type === 'player' && unit.name === selectedCharacter?.name;
+  console.log('==> stats', stats)
+  // isPlayer && console.log('==> unit', selectedCharacter.equipment)
   return (
     <div>
-      <div>Name: {unit.name}</div>          
-      <div>Class: {unit.class}</div>
-      <div>HP: {unit.currentHp}/{stats.baseHp} </div>      
-      <div>Attack Damage: {stats.baseDmg + 1}-{stats.baseDmg + stats.dmgDice}</div> 
+      <div><span>Name:</span> <span> {unit.name}</span></div>
+      <div><span>Class:</span> <span> {capitalize(unit.class)} </span></div>
+      <div><span>HP: </span> <span>{unit.currentHp}/{stats.baseHp}</span> </div>
+      {isPlayer && (
+        <div>
+          <span>STATS: </span>
+            <div className='ml-2'>
+              <SingleStat label="Critical Strike Chance: " value={'0'} />
+            </div>
+        </div>
+      )}
+      {/*isPlayer && (
+        <div>
+          <span>Equipment:</span>
+            {Object.values(selectedCharacter.equipment).map(item => (
+              item ? <EquipmentStats itemId={item} key={item} /> : null
+            ))}
+        </div> 
+      )*/}
       {isActive && (
         <div className="mt-3">
           <div>Position: {unit.position.col}, {unit.position.row}</div>

@@ -1,5 +1,6 @@
 import { STARTING_WEAPONS } from "@/constants/classOptions";
 import { characterSchema } from "@/schemas/character.schema";
+import type { EquipmentSlot } from "@/types/characterTypes";
 import type { z } from "zod";
 
 type CharacterFormData = z.infer<typeof characterSchema>
@@ -17,23 +18,43 @@ export const getAllCharacters = async () => {
 }
 
 export const createCharacter = async (data: CharacterFormData) => {
+  const emptyEquipment: Record<EquipmentSlot, string | null> = {
+    weapon1: null,
+    weapon2: null,
+    helmet: null,
+    armour: null,
+    belt: null,
+    boots: null,
+    gloves: null,
+    trinket1: null,
+    trinket2: null,
+    quiver: null,
+  };
+
+  const equipment: Record<EquipmentSlot, string | null> = {
+    ...emptyEquipment,
+    weapon1: STARTING_WEAPONS[data.equipment][0] ?? null,
+    weapon2: STARTING_WEAPONS[data.equipment][1] ?? null,
+  };
+
   const newData = {
     ...data,
-    equipment: JSON.stringify(STARTING_WEAPONS[data.equipment])
+    equipment: JSON.stringify(equipment)
   } 
+
   const response = await fetch(baseUrl + '/characters', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify(newData),
-})
+}) 
 
 if (!response.ok) {
   throw new Error('Failed to save character');
 }
 
-return response.json()
+return response.json() 
 }
 
 export const deleteCharacter = async (id: number) => {

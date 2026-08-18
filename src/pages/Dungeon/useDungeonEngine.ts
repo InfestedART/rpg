@@ -78,7 +78,7 @@ const useDungeonEngine = () => {
     const targetUnit = gameState.units[targetUnitId]
     const attackerStats = ALL_STATS[activePlayer.class]
 
-    const criticalHit = Math.random() <= attackerStats.critChance;
+    const criticalHit = Math.random() <= (attackerStats.critChance || 0);
     const baseDamage = attackerStats.baseDmg + randomNumber(1, attackerStats.dmgDice);
     const attackDmg = criticalHit ? baseDamage * 1.5 : baseDamage
 
@@ -96,6 +96,7 @@ const useDungeonEngine = () => {
       `${criticalHit ? 'CRITICAL HIT! ' : ''}` +
       `${activePlayer.name} attacks ${targetUnit.name} for ${attackDmg} dmg`;
     sendMessage(attackLog, criticalHit ? 'warning' : 'info');
+
     const newGameState = {
       ...gameState,
       attacksLeft: gameState.attacksLeft - 1,

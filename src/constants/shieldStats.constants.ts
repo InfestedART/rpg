@@ -1,6 +1,13 @@
 import type { ShieldStatsType } from "@/types/itemTypes";
 
 export const SHIELD_STATS: Record<string, ShieldStatsType> = {
+  'unarmed': {
+    name: 'unarmed',
+    itemClass: 'none',
+    itemType: 'offhand',
+    quantityAllowed: 1,
+    rarity: 'common'
+  },
   'shield_0': {
     name: 'Short Shield',
     itemClass: 'shield',

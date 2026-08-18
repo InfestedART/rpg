@@ -1,0 +1,26 @@
+.tooltip-container {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 100%;
+  z-index: 50;
+
+  margin-bottom: 0;
+  padding: 6px 10px;
+
+  transform: translateX(-50%);
+
+  white-space: nowrap;
+
+  border-radius: 4px;
+  background-color: #1f2937;
+  color: white;
+
+  font-size: 14px;
+
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
