@@ -1,10 +1,8 @@
 import type { CharacterType } from "@/types/characterTypes";
 import EquipmentStats from "../EquipmentStats";
 import { capitalize, round } from "@/utils/utils";
-import { ALL_STATS } from "@/constants/unitStats.constants";
-import { WEAPON_STATS } from "@/constants/weaponStats.constants";
-import { SHIELD_STATS } from "@/constants/shieldStats.constants";
 import SingleStat from "../SingleStat";
+import { getPlayerUnit } from "@/utils/unit.utils";
 
 type PlayerStatsProps = {
   selectedCharacter: CharacterType
@@ -13,26 +11,12 @@ type PlayerStatsProps = {
 const PlayerStats = ({ selectedCharacter }: PlayerStatsProps) => {
   if (!selectedCharacter) return null;
 
-  const equipedItems = Object.values(selectedCharacter.equipment)
-  const baseStats = ALL_STATS[selectedCharacter.class];
-
-  const mainWeapon = selectedCharacter.equipment['weapon1']
-  const offHand = selectedCharacter.equipment['weapon2']
-
-  const mainWeaponStats = mainWeapon ? WEAPON_STATS[mainWeapon] : WEAPON_STATS['unarmed']
-  const offHandStats = offHand ? SHIELD_STATS[offHand] : SHIELD_STATS['unarmed']
-
-  // console.log('==> stats', baseStats, mainWeaponStats, offHand)
+  const equipedItems = Object.entries(selectedCharacter.equipment)
+  const playerStats = getPlayerUnit(selectedCharacter);
   
-  const minDmg = baseStats.baseDmg + mainWeaponStats.baseDmg
-  const maxDmg = minDmg + mainWeaponStats.dmgDice
-  const rawCritChance = (baseStats.critChance || 0) + (mainWeaponStats.bonusCritChance || 0)
-  const critChance = round(rawCritChance*100, 2)
-
-  const blockChance = offHandStats?.blockChance || 0
-  const evadeChance = offHandStats?.evadeChance || 0
-  const stunChance = mainWeaponStats.stunChance || 0
-  const bleedChance = mainWeaponStats.bleedChance || 0
+  const minDmg = playerStats.baseDmg
+  const maxDmg = minDmg + playerStats.dmgDice
+  const { critChance, evadeChance, blockChance, stunChance, bleedChance } = playerStats
 
   return (
     <div>
@@ -43,19 +27,21 @@ const PlayerStats = ({ selectedCharacter }: PlayerStatsProps) => {
         <span>Stats: </span>
         <div className="ml-3">
           <SingleStat label="Damage: " value={`${minDmg}-${maxDmg}`} />
-          { critChance > 0 && <SingleStat label="Critical Strike Chance: " value={`${critChance}%`} /> }
-          { evadeChance > 0 && <SingleStat label="Chance to Evade: " value={`${evadeChance}%`} /> }
-          { blockChance > 0 && <SingleStat label="Chance to Block: " value={`${critChance}%`} /> }
-          { stunChance > 0 && <SingleStat label="Chance to Stun: " value={`${stunChance}%`} /> }
-          { bleedChance > 0 && <SingleStat label="Chance to cause Bleeding: " value={`${bleedChance}%`} /> }
+          { critChance && critChance > 0 && <SingleStat label="Critical Strike Chance: " value={`${critChance}%`} /> }
+          { evadeChance && evadeChance > 0 && <SingleStat label="Chance to Evade: " value={`${round(evadeChance*100, 2)}%`} /> }
+          { blockChance && blockChance > 0 && <SingleStat label="Chance to Block: " value={`${round(blockChance*100, 2)}%`} /> }
+          { stunChance && stunChance > 0 && <SingleStat label="Chance to Stun: " value={`${round(stunChance*100, 2)}%`} /> }
+          { bleedChance && bleedChance > 0 && <SingleStat label="Chance to cause Bleeding: " value={`${round(bleedChance*100, 2)}%`} /> }
         </div>
       </div>
 
       <div>
         <span>Equipment: </span> 
-        {equipedItems.map(item => (
-          item ? <EquipmentStats itemId={item} key={item}/> : null
-        ))}
+        <div className="ml-3">
+          {equipedItems.map(([slot, item]) => (
+            item ? <EquipmentStats slot={slot} itemId={item} key={slot}/> : null
+          ))}
+        </div>
       </div>
 
       <div>

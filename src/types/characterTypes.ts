@@ -10,10 +10,7 @@ export type CharacterType = {
   level: number,
   exp: number,
   equipment: Record<EquipmentSlot, string | null>,
-  moveSpeed: number,
-  attackCount: number,
   gold: number,
-  bonusActions?: number,
   createdAt?: string,
 }
 
