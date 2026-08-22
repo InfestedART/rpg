@@ -1,9 +1,9 @@
 export type CharClassType = 'soldier' | 'wizard' | 'ranger' | 'warrior' | 'bandit';
 export type EnemyClassType = 'brigand' | 'skeleton' | 'rat' | 'dummy';
 // export type AllyClassType = ''
-export type EquipmentSlot = 'weapon1' | 'weapon2' | 'helmet' | 'armour' | 'belt' | 'boots' | 'gloves' | 'trinket1' | 'trinket2' | 'quiver'
+export type EquipmentSlot = 'weapon1' | 'offhand' | 'helmet' | 'armour' | 'belt' | 'boots' | 'gloves' | 'trinket1' | 'trinket2' | 'quiver'
 
-export type CharacterType = {
+export interface CharacterType {
   id: number,
   name: string,
   class: CharClassType | EnemyClassType,
@@ -14,7 +14,7 @@ export type CharacterType = {
   createdAt?: string,
 }
 
-export type UnitStats = {
+export interface UnitStatsT {
   baseDmg: number,
   dmgDice: number,
   baseHp: number,
@@ -27,5 +27,11 @@ export type UnitStats = {
   blockChance?: number,
   stunChance?: number,
   bleedChance?: number,
-  equipment?: Record<EquipmentSlot, string | null>,
+  equipment?: Partial<Record<EquipmentSlot, string | null>>,
+}
+
+export type EnemyWeaponPoolT = {
+  slot: EquipmentSlot,
+  weapons: string[],
+  chance: number,
 }

@@ -1,4 +1,4 @@
-import type { CharClassType, EnemyClassType } from "./characterTypes";
+import type { CharClassType, EnemyClassType, EquipmentSlot } from "./characterTypes";
 
 export type TileTerrain = 'land' | 'stone' | 'grass' | 'water'; 
 export type TileContent = 'player' | 'ally' | 'enemy' | 'obstacle' | 'chest' | 'button' | 'empty';
@@ -18,7 +18,7 @@ export interface Tile {
 
 export type Board = Tile[][];
 
-export type PieceStatus = 'alive' | 'dead' | 'removed'  // buff, debuff?
+export type PieceStatus = 'alive' | 'dead' | 'removed'
 
 type Piece = {
   type: TileContent,
@@ -31,9 +31,10 @@ export type InitialBoard = Record<number, Piece>
 export interface Unit {
   name: string,
   type: UnitType,
-  class: CharClassType | EnemyClassType,  // TODO: add type for class
+  class: CharClassType | EnemyClassType, 
   currentHp: number,
-  // buffs: Buff[],
+  equipment?: Partial<Record<EquipmentSlot, string | null>>,
+  status: UnitStatus[],
   position: Position,
   // loot?: Loot  // on enemy defeat
 }
@@ -51,7 +52,10 @@ export interface GameState {
   movesLeft: number;
   attacksLeft: number;
   bonusActionsLeft: number;
-  // bonusActionsLeft: number; ?
 }
 
 export type ActionType = 'attack' | 'interact';
+
+export type Debuff = 'stunned' | 'bleeding' | 'poisoned' | 'frozen' | 'slowed' | 'cursed' | 'shocked' | 'ignited'
+export type Buff = 'hasted' | 'blessed' | 'flying'
+export type UnitStatus = Debuff | Buff

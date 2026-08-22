@@ -1,44 +1,54 @@
 import { SHIELD_STATS } from "@/constants/shieldStats.constants";
 import { ALL_STATS } from "@/constants/unitStats.constants";
 import { WEAPON_STATS } from "@/constants/weaponStats.constants";
-import type { CharacterType, EquipmentSlot, UnitStats } from "@/types/characterTypes"
-import { round } from "./utils";
+import type { CharacterType, EquipmentSlot, UnitStatsT } from "@/types/characterTypes"
 
-export const getPlayerUnit = (selectedCharacter: CharacterType): UnitStats => {
+export const getPlayerUnitStats = (selectedCharacter: CharacterType): UnitStatsT => {
   const baseStats = ALL_STATS[selectedCharacter.class];
 
   const mainWeapon = selectedCharacter.equipment['weapon1']
-  const offHand = selectedCharacter.equipment['weapon2']
+  const offHand = selectedCharacter.equipment['offhand']
   const mainWeaponStats = mainWeapon ? WEAPON_STATS[mainWeapon] : WEAPON_STATS['unarmed']
-  const offHandStats = offHand ? SHIELD_STATS[offHand] : SHIELD_STATS['unarmed']
-
-  const critChance = (baseStats.critChance || 0) + (mainWeaponStats.bonusCritChance || 0)
-  const bleedChance = mainWeaponStats.bleedChance || 0
-  const blockChance = offHandStats?.blockChance || 0
-  const evadeChance = offHandStats?.evadeChance || 0
-  const stunChance = mainWeaponStats.stunChance || 0
+  const offHandStats = offHand ? (SHIELD_STATS[offHand] || WEAPON_STATS[offHand]) : SHIELD_STATS['unarmed']
 
   return {
-    baseHp: baseStats.baseHp,
-    attackCount: baseStats.attackCount,
-    moveSpeed: baseStats.moveSpeed,
-    bonusActions: baseStats.bonusActions,
-    initiative: baseStats.initiative,
+    ...baseStats,
     baseDmg: baseStats.baseDmg + mainWeaponStats.baseDmg,
     dmgDice: mainWeaponStats.name === 'Unarmed' ? baseStats.dmgDice : mainWeaponStats.dmgDice,
-    critChance: round(critChance*100, 2),
-    bleedChance: round(bleedChance*100, 2),
-    blockChance: round(blockChance*100, 2),
-    evadeChance: round(evadeChance*100, 2),
-    stunChance: round(stunChance*100, 2),
+    critChance: (baseStats.critChance || 0) + (mainWeaponStats.bonusCritChance || 0) + (offHandStats.bonusCritChance || 0),
+    bleedChance: mainWeaponStats.bleedChance || 0,
+    blockChance: offHandStats?.blockChance || 0,
+    evadeChance: offHandStats?.evadeChance || 0,
+    stunChance: mainWeaponStats.stunChance || 0
   }
 }
 
 export const getUnitStats = (
-  baseStats: UnitStats,
-  equipment: Record<EquipmentSlot, string | null>
-) => {
-  return {
+  baseStats: UnitStatsT,
+  equipment?: Partial<Record<EquipmentSlot, string | null>>
+): UnitStatsT => {
 
+  let additionalStats: Partial<UnitStatsT> = {}
+  if (equipment) {
+    console.log('==> baseStats', baseStats, equipment)
+    const mainWeapon = equipment['weapon1']
+    const offHand = equipment['offhand']
+    const mainWeaponStats = mainWeapon ? WEAPON_STATS[mainWeapon] : WEAPON_STATS['unarmed']
+    const offHandStats = offHand ? (SHIELD_STATS[offHand] || WEAPON_STATS[offHand]) : SHIELD_STATS['unarmed']
+
+    additionalStats.baseDmg = mainWeaponStats.baseDmg
+    additionalStats.dmgDice = mainWeaponStats.dmgDice
+    additionalStats.critChance = (baseStats.critChance || 0) + (mainWeaponStats.bonusCritChance || 0) + (offHandStats.bonusCritChance || 0),
+    additionalStats.bleedChance = mainWeaponStats.bleedChance
+    additionalStats.blockChance = offHandStats?.blockChance
+    additionalStats.evadeChance = offHandStats?.evadeChance
+    additionalStats.stunChance = mainWeaponStats.stunChance
+  } else {
+    additionalStats.critChance = baseStats.critChance
+  }
+
+  return {
+    ...baseStats,
+    ...additionalStats
   }
 }

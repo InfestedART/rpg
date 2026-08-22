@@ -50,6 +50,18 @@ export const WEAPON_STATS: Record<string, WeaponStatsType> = {
     rarity: 'common',
     stunChance: 0.15,
   },
+  'axe_0': {
+    baseDmg: 3,
+    dmgDice: 5,
+    name: 'Hand Axe',
+    damageType: 'slash',
+    quantityAllowed: 2,
+    weight: '1H',
+    itemClass: 'sword',
+    itemType: 'weapon',
+    rarity: 'common',
+    bleedChance: 0.1,
+  },
   'staff_0': {
     baseDmg: 0,
     dmgDice: 8,
@@ -134,8 +146,7 @@ export const WEAPON_STATS: Record<string, WeaponStatsType> = {
     itemClass: 'sword',
     itemType: 'weapon',
     rarity: 'common',
-    bonusCritChance: 0.05,
-    bleedChance: 0.05
+    bleedChance: 0.1
   },
   'longmace_0': {
     baseDmg: 0,

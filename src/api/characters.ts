@@ -20,7 +20,7 @@ export const getAllCharacters = async () => {
 export const createCharacter = async (data: CharacterFormData) => {
   const emptyEquipment: Record<EquipmentSlot, string | null> = {
     weapon1: null,
-    weapon2: null,
+    offhand: null,
     helmet: null,
     armour: null,
     belt: null,
@@ -34,7 +34,7 @@ export const createCharacter = async (data: CharacterFormData) => {
   const equipment: Record<EquipmentSlot, string | null> = {
     ...emptyEquipment,
     weapon1: STARTING_WEAPONS[data.equipment][0] ?? null,
-    weapon2: STARTING_WEAPONS[data.equipment][1] ?? null,
+    offhand: STARTING_WEAPONS[data.equipment][1] ?? null,
   };
 
   const newData = {

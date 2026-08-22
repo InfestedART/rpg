@@ -29,6 +29,7 @@ export interface ShieldStatsType extends BaseStats {
   quantityAllowed: 1,
   itemClass: ShieldType
   blockChance?: number,
-  evadeChance?: number
+  evadeChance?: number,
+  bonusCritChance?: number,
 
 }

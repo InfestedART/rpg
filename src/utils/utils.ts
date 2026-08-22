@@ -20,3 +20,8 @@ export function round(num: number, decimals: number) {
   const factor = 10 ** decimals;
   return Math.round(num * factor) / factor;
 }
+
+export function selectRandomItem<T>(itemPool: T[]): T {
+  return itemPool[Math.floor(Math.random() * itemPool.length)];
+}
+

@@ -42,7 +42,7 @@ const Dungeon = () => {
   const interactAction = () => isInteracting ? cancelAction() : handleAction('interact');
   const attackAction = () => isAttacking ? cancelAction() : handleAction('attack');
 
-  // console.log('==> messages', messages)
+  // console.log('==> gameState', gameState)
 
   return (
     <div className='main-game'>
@@ -59,7 +59,7 @@ const Dungeon = () => {
             {objectsInRange > 0 && (
               <Button
                 variant='secondary'
-                disabled={isAttacking}
+                disabled={isAttacking || gameState.bonusActionsLeft < 1}
                 className='mt-2'
                 size='md'
                 onClick={() => interactAction()}
@@ -70,7 +70,7 @@ const Dungeon = () => {
             {enemiesInRange > 0 && (
               <Button
                 variant='secondary'
-                disabled={isInteracting || gameState.attacksLeft < 1}
+                disabled={isInteracting || gameState.attacksLeft < 1 || activePlayer.status.indexOf('stunned') > 0}
                 className='mt-2'
                 size='md'
                 onClick={() => attackAction()}

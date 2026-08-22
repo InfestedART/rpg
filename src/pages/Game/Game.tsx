@@ -63,7 +63,7 @@ const Game = () => {
     
   }, [selectedCharacterId])
 
-  // console.log('==> selected character:', selectedCharacterId)
+  // console.log('==> selected character:', selectedCharacter, selectedCharacterId)
 
   const initialPlayerPos: InitialBoard = {
   1: {
@@ -135,6 +135,11 @@ const Game = () => {
     setInitialBoard(newBoard as InitialBoard)
   }
 
+  const enterDungeon = () => {
+    updateBoardState(DUNGEON_SIZE[dungeonSize], enemyAmout);
+    navigate('/dungeon')
+  }
+
   return (
     <div className='main-game town'>
       <header className='page-header'>
@@ -170,7 +175,7 @@ const Game = () => {
             inputSize='sm'
             value={dungeonType}
           />
-          <Button variant='secondary' className='mt-3' onClick={() => navigate('/dungeon')}>
+          <Button variant='secondary' className='mt-3' onClick={enterDungeon}>
             ENTER DUNGEON
           </Button>
         </SidebarSection>
