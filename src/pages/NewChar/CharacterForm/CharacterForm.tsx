@@ -9,7 +9,7 @@ import SelectInput from "@/components/Form/SelectInput";
 import { characterSchema } from "@/schemas/character.schema";
 import { createCharacter } from "@/api/characters";
 import { CLASS_OPTIONS, WEAPONS_BY_CLASS } from "@/constants/classOptions";
-import type { CharacterType, CharClassType } from "@/types/characterTypes";
+import type { CharClassType } from "@/types/characterTypes";
 
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '@/store/gameStore'
@@ -19,16 +19,18 @@ type CharacterFormData = z.infer<typeof characterSchema>
 
 const CharacterForm = () => {
   const [charClass, setCharClass] = useState<CharClassType>('soldier')
-  const { setSelectedCharacter } = useCharacterStore();
+  const { setSelectedCharacterId } = useCharacterStore();
   const { setCurrentClass } = useGameStore();
 
   const navigate = useNavigate();
 
   const onSubmit = async (data: CharacterFormData) => {
-    await createCharacter(data);
-    setSelectedCharacter(data as CharacterType);
-    console.log("==> Valid character:", data)
-    navigate('/game');
+    const newChar = await createCharacter(data);
+    if (newChar) {
+      console.log("==> Valid character:", data, newChar.id)
+      setSelectedCharacterId(newChar.id);
+      navigate('/game');
+    }
   };
 
   const equipmentOptions =

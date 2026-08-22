@@ -1,6 +1,8 @@
-import { ALL_STATS } from "@/constants/classOptions";
-import type { CharacterType } from "@/types/characterTypes";
+import { ALL_STATS } from "@/constants/unitStats.constants";
+import type { CharacterType, EnemyClassType } from "@/types/characterTypes";
 import type { Board, GameState, InitialBoard, TileTerrain, Unit, Position, UsableObject } from "@/types/dungeon.types";
+import { randomNumber, selectRandomItem } from "./utils";
+import { ENEMY_WEAPON_POOL } from "@/constants/enemy.constants";
 
 export const isInBounds = (pos: Position, size: number) => (
   pos.row >= 0 && pos.row < size && pos.col >= 0 && pos.col < size
@@ -14,20 +16,31 @@ export const inititalizeGameState = (
   const units: Record<number, Unit> = {}
   const objects: Record<number, UsableObject> = {}
 
-  for (const [key, value] of Object.entries(initialBoard)) {
-    if (value.type === 'player' || value.type === 'enemy' || value.type === 'ally') {
-      const unitStats = ALL_STATS[value.class || 'dummy']
+  for (const [key, piece] of Object.entries(initialBoard)) {
+    if (piece.type === 'player' || piece.type === 'enemy' || piece.type === 'ally') {
+      const unitStats = ALL_STATS[piece.class || 'dummy']
       units[Number(key)] = {
-        name: value.type === 'player' && selectedCharacter ? selectedCharacter.name : `${value.class || 'enemy'}_${key}`,
-        type: value.type,
-        class: value.class || 'dummy',
+        name: piece.type === 'player' && selectedCharacter ? selectedCharacter.name : `${piece.class || 'enemy'}_${key}`,
+        type: piece.type,
+        class: piece.class || 'dummy',
         currentHp: unitStats.baseHp,
-        position: initialBoard[Number(key)].position
+        position: initialBoard[Number(key)].position,
+        status: []
       }    
     }
-    if (value.type === 'chest' || value.type === 'button') {
+    if (piece.type === 'enemy' && piece.class) {
+       const weaponPool = ENEMY_WEAPON_POOL[(piece.class as EnemyClassType)]
+       if (weaponPool) {
+        const hasWeapon = Math.random() < weaponPool.chance
+        if (hasWeapon) {
+          const enemyWeapon = selectRandomItem(weaponPool.weapons)
+          units[Number(key)].equipment = { [weaponPool.slot]: enemyWeapon}
+        }
+       }
+    }
+    if (piece.type === 'chest' || piece.type === 'button') {
       objects[Number(key)] = {
-        type: value.type,
+        type: piece.type,
         position: initialBoard[Number(key)].position
       }
     } 
@@ -41,6 +54,23 @@ export const inititalizeGameState = (
     attacksLeft: playerStats?.attackCount || 1,
     bonusActionsLeft: playerStats?.bonusActions || 1,
   } 
+}
+
+const addWaterToBoard = (dungeonSize: number, board: Board): Board => {
+  const waterDirection = randomNumber(1, 2);
+  if (waterDirection % 2 === 0) {
+    board[1][Math.floor(dungeonSize*0.67)] = {
+      content: board[1][Math.floor(dungeonSize*0.67)].content,
+      terrain: 'water'
+    }
+  } else {
+    board[Math.floor(dungeonSize*0.67)][1] = {
+      content: board[Math.floor(dungeonSize*0.67)][1].content,
+      terrain: 'water'
+    } 
+  }
+  
+  return board
 }
 
 export const buildDungeon = (
@@ -59,7 +89,8 @@ export const buildDungeon = (
     }
   }
 
-  return board;
+  const finalBoard = randomNumber(1, 2) % 2 === 0 ? addWaterToBoard(dungeonSize, board) : board
+  return finalBoard;
 }
 
 export const getUnitsInBoard = (gameState: GameState) => gameState.units && Object.values(gameState.units);

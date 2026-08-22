@@ -28,7 +28,7 @@ const LoadChar = () => {
   const [charList, setCharList] = useState<Character[]>([]);
   const [deletedId, setDeletedId] = useState<number | null >(null);
 
-  const { setSelectedCharacter } = useCharacterStore();
+  const { setSelectedCharacterId } = useCharacterStore();
   const navigate = useNavigate();
 
   const fetchCharacters = async () => {
@@ -44,7 +44,7 @@ const LoadChar = () => {
 
   const handleSelect = async (id: number) => {
     const char = await getCharacterById(id)
-    setSelectedCharacter(char);
+    setSelectedCharacterId(char.id);
     navigate('/game');
   }
 

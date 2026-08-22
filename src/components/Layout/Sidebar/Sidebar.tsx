@@ -10,9 +10,10 @@ type SidebarProps = {
   side: SidebarSide;
   children?: React.ReactNode;
   isOpen?: boolean;
+  retractable?: boolean;
 }
 
-const Sidebar = ({title, side, children, isOpen = true}: SidebarProps) => {
+const Sidebar = ({title, side, children, isOpen = true, retractable = true}: SidebarProps) => {
   const [open, setOpen] = useState<boolean>(isOpen);
   const collapseIcon = side === 'left' ? faChevronLeft : faChevronRight;
   const expandIcon = side === 'left' ? faChevronRight : faChevronLeft;
@@ -38,12 +39,15 @@ const Sidebar = ({title, side, children, isOpen = true}: SidebarProps) => {
     <aside className={`sidebar sidebar-${side}`}>
       <div className="sidebar-header">
         {side === 'left' && <h2 className='sidebar-title'>{title}</h2>}
-        <Button 
-          onClick={() => setOpen(false)}
-          aria-label={`Close ${side} sidebar`}
-          variant={'ghost'}
-          icon={collapseIcon}
-        />
+        {retractable && (
+          <Button 
+            onClick={() => setOpen(false)}
+            aria-label={`Close ${side} sidebar`}
+            variant={'ghost'}
+            icon={collapseIcon}
+            size='sm'
+          />
+        )}
         {side === 'right' && <h2 className='sidebar-title'>{title}</h2>}
       </div>
       <div className="sidebar-content">

@@ -4,6 +4,8 @@
   margin: 0 0 12px 0;
   padding: 0 10px 10px;
   min-width: 0; /* prevents fieldset's default overflow quirk */
+  max-height: 60%;
+  overflow-y: auto;
 }
 
 .sidebar-section__title {

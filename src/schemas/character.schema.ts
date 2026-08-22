@@ -9,4 +9,5 @@ export const characterSchema = z.object({
   class: z.enum(['soldier', 'wizard', 'ranger', 'warrior', 'bandit']),
 
   equipment: z.string().min(1, "Select at least one item"),
+  gold: z.number().default(0),
 })

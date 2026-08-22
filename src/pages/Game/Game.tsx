@@ -1,10 +1,10 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDungeonStore } from '@/store/dungeonStore';
 import Button from '@/components/Button';
 import Select from '@/components/Select';
-import CharStats from './PlayerStats';
+import PlayerStats from './PlayerStats';
 import './Game.css';
 
 import { DUNGEON_SIZE, DUNGEON_SIZE_OPTIONS, DUNGEON_TYPE_OPTIONS } from '@/constants/dungeon.contants';
@@ -13,6 +13,8 @@ import Input from '@/components/Input';
 import type { InitialBoard, Position, TileTerrain } from '@/types/dungeon.types';
 import { useCharacterStore } from '@/store/characterStore';
 import type { EnemyClassType } from '@/types/characterTypes';
+import SidebarSection from '@/components/Layout/Sidebar/SidebarSection';
+import { getCharacterById } from '@/api/characters';
 
 // TODO: move these to constants
 const actions = [
@@ -27,6 +29,7 @@ const actions = [
 ]
 
 const Game = () => {
+  const navigate = useNavigate();
   const {
     dungeonSize,
     setDungeonSize,
@@ -35,12 +38,32 @@ const Game = () => {
     initialBoard,
     setInitialBoard
   } = useDungeonStore();
-  const { selectedCharacter } = useCharacterStore();
-  const navigate = useNavigate();
+  const { selectedCharacterId, selectedCharacter, setSelectedCharacter } = useCharacterStore();
 
-  const [ selectedAction, setSelectedAction ] = useState<string>('stats');
   const enemyCount =  Object.values(initialBoard).filter(({ type }) => ['enemy'].includes(type)).length;
+  const [ selectedAction, setSelectedAction ] = useState<string>('stats');
   const [ enemyAmout, setEnemyAmount ] = useState<number>(enemyCount || 1);
+
+  useEffect(() => {
+    if (!selectedCharacterId) { navigate('/') }
+    else {
+      const fetchCharacter = async () => {
+        try {
+          const char = await getCharacterById(selectedCharacterId)
+          setSelectedCharacter({
+            ...char,
+            equipment: JSON.parse(char.equipment)
+          });
+        } catch (err) {
+          console.error('Failed to load character', err);
+        }
+      }
+      fetchCharacter();
+    }
+    
+  }, [selectedCharacterId])
+
+  // console.log('==> selected character:', selectedCharacter, selectedCharacterId)
 
   const initialPlayerPos: InitialBoard = {
   1: {
@@ -112,16 +135,23 @@ const Game = () => {
     setInitialBoard(newBoard as InitialBoard)
   }
 
+  const enterDungeon = () => {
+    updateBoardState(DUNGEON_SIZE[dungeonSize], enemyAmout);
+    navigate('/dungeon')
+  }
+
   return (
-    <div className='main-game'>
+    <div className='main-game town'>
       <header className='page-header'>
         <h1 className='page-title'> TOWN </h1>
       </header>
 
-      <Sidebar side='left' title='ACTIONS'>  
-        <div>
+      <Sidebar side='left' title='ACTIONS' retractable={false}>  
+        <SidebarSection title='ACTIONS'>
           {getActions()}
-          <h4 className='mt-5'>DUNGEON</h4>
+        </SidebarSection>
+
+        <SidebarSection title='DUNGEON'>
           <Input
             label='Enemies'
             type='number'
@@ -145,16 +175,19 @@ const Game = () => {
             inputSize='sm'
             value={dungeonType}
           />
-          <Button variant='secondary' className='mt-3' onClick={() => navigate('/dungeon')}>
+          <Button variant='secondary' className='mt-3' onClick={enterDungeon}>
             ENTER DUNGEON
           </Button>
-        </div>
+        </SidebarSection>
       </Sidebar>
 
       <div className='game-container'>
         <aside className='game-panel center'>
           <h2>CHARACTER</h2>
-          {selectedAction === 'stats' && <CharStats />}
+          {selectedCharacter 
+            && selectedAction === 'stats'
+            && <PlayerStats selectedCharacter={selectedCharacter} />
+          }
         </aside>
       </div>
     </div>
