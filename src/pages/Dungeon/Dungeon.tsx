@@ -1,19 +1,21 @@
 import { useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 
+import { getEnemiesInRange, getObjectsInRange } from '@/utils/dungeon.utils';
 import { useCharacterStore } from '@/store/characterStore';
 import useDungeonEngine from './useDungeonEngine';
 
 import Button from '@/components/Button';
 import Sidebar from '@/components/Layout/Sidebar';
+import SidebarSection from '@/components/Layout/Sidebar/SidebarSection';
+import Hover from '@/components/Hover';
+
 import UnitStats from './UnitStats';
 import TileInfo from './TileInfo';
 import Tile from './Tile';
+import MessageBox from './MessageBox';
 
 import './Dungeon.css';
-import { getEnemiesInRange, getObjectsInRange } from '@/utils/dungeon.utils';
-import MessageBox from './MessageBox';
-import SidebarSection from '@/components/Layout/Sidebar/SidebarSection';
 
 const Dungeon = () => {
   const navigate = useNavigate();
@@ -29,7 +31,8 @@ const Dungeon = () => {
     isInteracting,
     isAttacking,
     handleTileClick,
-    messages
+    messages,
+    showAttackRange,
   } = useDungeonEngine();
   const { selectedCharacter } = useCharacterStore();
   if (!selectedCharacter) return null;
@@ -39,8 +42,14 @@ const Dungeon = () => {
   const objectsInRange = getObjectsInRange(gameState, validTargets)
   const enemiesInRange = getEnemiesInRange(activePlayer, gameState, validTargets);
 
-  const interactAction = () => isInteracting ? cancelAction() : handleAction('interact');
-  const attackAction = () => isAttacking ? cancelAction() : handleAction('attack');
+  const handleInteract = () => isInteracting ? cancelAction() : handleAction('interact');
+  const handleAttack = () => isAttacking ? cancelAction() : handleAction('attack');
+
+  // const interactDisabled = objectsInRange < 1 && (isAttacking || gameState.bonusActionsLeft < 1)
+  const attackDisabled = enemiesInRange < 1 
+    || isInteracting 
+    || gameState.attacksLeft < 1 
+    || activePlayer.status.indexOf('stunned') > 0
 
   // console.log('==> gameState', gameState)
 
@@ -62,22 +71,30 @@ const Dungeon = () => {
                 disabled={isAttacking || gameState.bonusActionsLeft < 1}
                 className='mt-2'
                 size='md'
-                onClick={() => interactAction()}
+                onClick={() => handleInteract()}
               >
                 {isInteracting ? '[C]ancel Action' : 'Us[E] Object'}
               </Button>
             )}
-            {enemiesInRange > 0 && (
+            <Hover
+              onHoverStart={() => showAttackRange(true)}
+              onHoverEnd={() => showAttackRange(false)}
+              enabled={!isAttacking}
+            >
               <Button
                 variant='secondary'
-                disabled={isInteracting || gameState.attacksLeft < 1 || activePlayer.status.indexOf('stunned') > 0}
-                className='mt-2'
+                disabled={attackDisabled}
+                className='mt-2 w-full'
                 size='md'
-                onClick={() => attackAction()}
+                onClick={() => {
+                  showAttackRange(false)
+                  handleAttack()
+                }}
                 >
                 {isAttacking ? '[C]ancel Attack' : '[A]ttack'}
-              </Button>
-            )}   
+              </Button> 
+            </Hover>
+            
             <Button variant='secondary' className='mt-2' size='md' onClick={finishTurn}>
               Finish [T]urn
             </Button>
@@ -119,13 +136,19 @@ const Dungeon = () => {
                       col.content
                     )
                     return (
-                      <Tile 
-                        key={`tile_${rowIndex}_${colIndex}`}
-                        terrain={col.terrain}
-                        piece={col.content}
-                        status={cls}
-                        onClick={() => handleTileClick({ row: rowIndex, col: colIndex })}
-                      />
+                      <Hover
+                        enabled={isActive}
+                        onHoverStart={() => showAttackRange(true)}
+                        onHoverEnd={() => showAttackRange(false)}
+                      >
+                        <Tile 
+                          key={`tile_${rowIndex}_${colIndex}`}
+                          terrain={col.terrain}
+                          piece={col.content}
+                          status={cls}
+                          onClick={() => handleTileClick({ row: rowIndex, col: colIndex })}
+                        />
+                      </Hover>
                     )
                   })}
                 </div>

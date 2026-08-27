@@ -2,9 +2,9 @@ import { useCharacterStore } from "@/store/characterStore"
 import { Navigate, Outlet } from "react-router-dom"
 
 const StoreRequired = () => {
-  const { selectedCharacter } = useCharacterStore();
+  const { selectedCharacterId } = useCharacterStore();
 
-  if (!selectedCharacter) {
+  if (!selectedCharacterId) {
     return <Navigate to="/" replace />;
   }
   return <Outlet />

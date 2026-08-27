@@ -51,7 +51,7 @@ export const ARMOUR_BY_CLASS: Record<string, SelectOptions>  = {
   mace_shield: ['mace_0', 'shield_0'],
   staff: ['staff_0'],
   spellbook_focus: ['spellbook_0', 'focus_0'],
-  bow_arrows: ['bow_0', 'quiver_0'],
+  bow_arrows: ['bow_0'],
   dual_daggers: ['dagger_0', 'dagger_0'],
   trowing_knives: ['t-knives_0', 'cloak_0'],
   sword_rapier: ['sword_0', 'rapier_0'],

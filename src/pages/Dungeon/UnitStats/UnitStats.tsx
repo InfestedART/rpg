@@ -69,6 +69,7 @@ const UnitStats = ({ unit, gameState, isActive }: UnitStatsProps) => {
         <span>STATS: </span>
           <div className='ml-2'>
             <SingleStat label="Damage: " value={`${unitStats.baseDmg}-${unitStats.baseDmg + unitStats.dmgDice}`} />
+            { unitStats.range > 1 && <SingleStat label="Attack Range: " value={unitStats.range} /> }
             { <SingleStat label="Critical Strike Chance: " value={unitStats.critChance} percentage /> }
             { <SingleStat label="Chance to Evade: " value={unitStats.evadeChance} percentage /> }
             { <SingleStat label="Chance to Block: " value={unitStats.blockChance} percentage /> }

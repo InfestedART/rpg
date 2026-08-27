@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-import { DIRECTION_MAP, DUNGEON_SIZE } from "@/constants/dungeon.contants";
+import { DIRECTION_MAP, DIRECTIONS, DUNGEON_SIZE } from "@/constants/dungeon.contants";
 
 import type { ActionType, Board, GameState, Position, UnitStatus } from "@/types/dungeon.types";
 
@@ -21,6 +21,8 @@ import {
   getEnemiesInRange,
   getObjectsInRange,
   getObjectId,
+  getLegalTargets,
+  getPositionInDirection,
 } from "@/utils/dungeon.utils";
 import { addGoldToCharacter } from "@/api/characters";
 import { ALL_STATS } from "@/constants/unitStats.constants";
@@ -40,7 +42,8 @@ type DungeonEngine = {
   handleTileClick: (pos: Position) => void,
   validTargets: Position[],
   boardRef: React.RefObject<HTMLDivElement | null>,
-  messages: MessageLogType[]
+  messages: MessageLogType[],
+  showAttackRange: (show: boolean) => void,
 }
 
 const useDungeonEngine = (): DungeonEngine => {
@@ -221,35 +224,88 @@ const useDungeonEngine = (): DungeonEngine => {
     }
   }
 
-  const getTargetsInRange = ({ row, col }: Position, player: number) => {
-    // const attackRange = 1;  // temporal value
-    // const interactRange = 1;
-    const directions = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]];
-    const filteredDirections = directions.filter(([dirRow, dirCol]) => {
-      return isInBounds({ row: row + dirRow, col: col + dirCol}, DUNGEON_SIZE[dungeonSize])
-    })
-    const unitRange: Position[] = filteredDirections.map(([dirRow, dirCol]) => {
-      return {
-         row: row + dirRow,
-         col: col + dirCol,
-      };
-    })
+  const getFilteredDirections = (pos: Position) => DIRECTIONS.filter(([dirRow, dirCol]) => (
+    isInBounds({ row: pos.row + dirRow, col: pos.col + dirCol}, DUNGEON_SIZE[dungeonSize])
+  ))
 
+  const getUnitAttackRange = ({ row, col }: Position, player: number) => {
+    const activeUnit = gameState.units[player]
+    const filteredDirections = getFilteredDirections({ row, col });
     const targets: Position[] = [];
-    const activeUnit = gameState.units[player].type; 
-    const legalTargets: string[] = [];
-    if (activeUnit === 'player' || activeUnit === 'ally') legalTargets.push('enemy', 'chest', 'button');
-    if (activeUnit === 'enemy') legalTargets.push('player', 'ally'); 
-     
-    unitRange.forEach((pos) => {
-      const potencialTarget = board[pos.row][pos.col].content;
-      if (legalTargets.includes(potencialTarget))  {
-        targets.push(pos);
+    const activeUnitStats = activeUnit.type === 'player' 
+      ? getPlayerUnitStats(selectedCharacter as CharacterType)
+      : getUnitStats(ALL_STATS[activeUnit.class])
+    const legalTargets= getLegalTargets(activeUnit.type, 'enemy');
+    const obstacles = ['chest', 'wall']
+    
+    for (const dir of filteredDirections) {
+      const [ dirRow, dirCol ] = dir;
+      let newRow = row + dirRow
+      let newCol = col + dirCol
+      let rangeLimit = 1
+      
+      while (isInBounds({row: newRow, col: newCol}, DUNGEON_SIZE[dungeonSize]) && rangeLimit <= activeUnitStats.range) {
+        const tile = board[newRow][newCol]
+        if (tile) {
+          if (obstacles.includes(tile.content)) break;
+          if (legalTargets.includes(tile.content)) {
+            targets.push({ row: newRow, col: newCol });
+            break;
+          }
+        }
+        targets.push({ row: newRow, col: newCol });
+        newRow += dirRow;
+        newCol += dirCol;
+        rangeLimit++;
       }
-    })
-
+    }
     return targets;
   };
+
+  const getTargetsInRange = (pos: Position, player: number, targetType: 'enemy' | 'object') => {
+    const activeUnit = gameState.units[player]
+    const filteredDirections = getFilteredDirections(pos);
+    const targets: Position[] = [];
+    const activeUnitStats = activeUnit.type === 'player' 
+      ? getPlayerUnitStats(selectedCharacter as CharacterType)
+      : getUnitStats(ALL_STATS[activeUnit.class])
+    const unitRange = targetType === 'enemy' ? activeUnitStats.range : 1
+    const legalTargets = getLegalTargets(activeUnit.type, targetType)
+    const obstacles = targetType === 'enemy' ? ['chest', 'wall'] : []
+    
+    for (const dir of filteredDirections) {
+      // const path: Position[] = [];
+      for (let distance = 1; distance <= unitRange; distance++) {
+        const position = getPositionInDirection(pos, dir, distance);
+        if (!isInBounds(position, DUNGEON_SIZE[dungeonSize])) { break; }
+        // path.push(position);
+
+        const tile = board[position.row][position.col]
+        if (tile) {
+          if (obstacles.includes(tile.content)) { break; }
+          if (legalTargets.includes(tile.content)) {
+            targets.push(position);
+          }
+          // break;
+        }
+      }
+    }
+    return targets;
+  }
+
+  const getValidTargets = (pos: Position, player: number) => ([
+    ...getTargetsInRange(pos, player, 'enemy'),
+    ...getTargetsInRange(pos, player, 'object'),
+  ]);
+
+  const showAttackRange = (show: boolean) => {
+    const currentPlayer = gameState.currentPlayer;
+    const currentPosition = gameState.units[currentPlayer].position;
+    const targets = show 
+      ? getUnitAttackRange(currentPosition, currentPlayer)
+      : getValidTargets(currentPosition, currentPlayer)
+    setValidTargets(targets);
+  }
 
   const finishTurn = useCallback(() => {
     const unitsIds = Object.keys(gameState.units);
@@ -257,7 +313,7 @@ const useDungeonEngine = (): DungeonEngine => {
     let next = Number(unitsIds[(currentId+1) % unitsIds.length]);
 
     const nextUnit = gameState.units[next];
-    const targets = getTargetsInRange(nextUnit.position, next);
+    const targets = getValidTargets(nextUnit.position, next);
     const nextUnitStats = ALL_STATS[nextUnit.class]
     const newGameState = {
       ...gameState,
@@ -296,7 +352,7 @@ const useDungeonEngine = (): DungeonEngine => {
     const isStunned = unitStatus.indexOf('stunned') > -1
     if (isOccupied || !isWalkable || isStunned) return
     
-    const targets = getTargetsInRange(newPosition, currentPlayer);
+    const targets = getValidTargets(newPosition, currentPlayer);
 
     newBoard[currentPosition.row][currentPosition.col] = {
       ...board[currentPosition.row][currentPosition.col],
@@ -379,7 +435,8 @@ const useDungeonEngine = (): DungeonEngine => {
     handleTileClick,
     validTargets,
     boardRef,
-    messages
+    messages,
+    showAttackRange,
   };
 } 
 

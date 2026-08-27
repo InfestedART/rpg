@@ -1,6 +1,6 @@
 import { ALL_STATS } from "@/constants/unitStats.constants";
 import type { CharacterType, EnemyClassType } from "@/types/characterTypes";
-import type { Board, GameState, InitialBoard, TileTerrain, Unit, Position, UsableObject } from "@/types/dungeon.types";
+import type { Board, GameState, InitialBoard, TileTerrain, Unit, Position, UsableObject, UnitType } from "@/types/dungeon.types";
 import { randomNumber, selectRandomItem } from "./utils";
 import { ENEMY_WEAPON_POOL } from "@/constants/enemy.constants";
 
@@ -169,3 +169,25 @@ export const isPieceAnEnemy = (pos: Position, gameState: GameState, activePlayer
     enemy => enemy.position.col === pos.col && enemy.position.row === pos.row
   )
 }
+
+export const getLegalTargets = (unitType: UnitType, targetType: 'enemy' | 'object'): string[] => {
+  if (targetType === 'enemy') {
+    switch (unitType) {
+      case 'player':
+      case 'ally':
+        return ['enemy'];
+      case 'enemy':
+        return ['player', 'ally'];
+    }
+  }
+
+  if (targetType === 'object' && unitType === 'player') {
+    return ['chest', 'button'];
+  }
+  return [];
+}
+
+export const getPositionInDirection = (pos: Position, direction: number[], distance: number): Position => ({
+  row: pos.row + direction[0] * distance,
+  col: pos.col + direction[1] * distance,
+});

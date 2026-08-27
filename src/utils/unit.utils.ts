@@ -11,11 +11,14 @@ export const getPlayerUnitStats = (selectedCharacter: CharacterType): UnitStatsT
   const mainWeaponStats = mainWeapon ? WEAPON_STATS[mainWeapon] : WEAPON_STATS['unarmed']
   const offHandStats = offHand ? (SHIELD_STATS[offHand] || WEAPON_STATS[offHand]) : SHIELD_STATS['unarmed']
 
+  // console.log('==>utils: ', baseStats, mainWeaponStats, offHand)
+
   return {
     ...baseStats,
     baseDmg: baseStats.baseDmg + mainWeaponStats.baseDmg,
     dmgDice: mainWeaponStats.name === 'Unarmed' ? baseStats.dmgDice : mainWeaponStats.dmgDice,
     critChance: (baseStats.critChance || 0) + (mainWeaponStats.bonusCritChance || 0) + (offHandStats.bonusCritChance || 0),
+    range: baseStats.range + (mainWeaponStats.bonusRange || 0),
     bleedChance: mainWeaponStats.bleedChance || 0,
     blockChance: offHandStats?.blockChance || 0,
     evadeChance: offHandStats?.evadeChance || 0,
@@ -30,7 +33,7 @@ export const getUnitStats = (
 
   let additionalStats: Partial<UnitStatsT> = {}
   if (equipment) {
-    console.log('==> baseStats', baseStats, equipment)
+    // console.log('==> baseStats', baseStats, equipment)
     const mainWeapon = equipment['weapon1']
     const offHand = equipment['offhand']
     const mainWeaponStats = mainWeapon ? WEAPON_STATS[mainWeapon] : WEAPON_STATS['unarmed']

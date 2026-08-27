@@ -36,7 +36,7 @@ export const WEAPON_STATS: Record<string, WeaponStatsType> = {
     itemType: 'weapon',
     rarity: 'common',
     bonusCritChance: 0.05, 
-    bonusRange: 1,
+    // bonusRange: 1,
   },
   'mace_0': {
     baseDmg: 3,
@@ -73,7 +73,7 @@ export const WEAPON_STATS: Record<string, WeaponStatsType> = {
     itemType: 'weapon',
     rarity: 'common',
     bonusCritChance: 0.05,
-    bonusRange: 1,
+    // bonusRange: 1,
   },
   'focus_0': {
     baseDmg: 0,
@@ -97,7 +97,7 @@ export const WEAPON_STATS: Record<string, WeaponStatsType> = {
     itemClass: 'bow',
     itemType: 'weapon',
     rarity: 'common',
-    bonusRange: 4,
+    bonusRange: 3,
   },
   'dagger_0': {
     baseDmg: 2,

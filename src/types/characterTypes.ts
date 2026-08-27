@@ -21,6 +21,7 @@ export interface UnitStatsT {
   moveSpeed: number,
   attackCount: number,
   bonusActions?: number,
+  range: number,
   initiative: number,
   critChance?: number,
   evadeChance?: number,

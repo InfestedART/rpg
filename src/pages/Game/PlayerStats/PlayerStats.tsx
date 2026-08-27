@@ -30,6 +30,7 @@ const PlayerStats = ({ selectedCharacter }: PlayerStatsProps) => {
         <div className="ml-3">
           <SingleStat label="HP: " value={playerStats.baseHp} />
           <SingleStat label="Damage: " value={`${minDmg}-${maxDmg}`} />
+          { playerStats.range > 1 && <SingleStat label="Attack Range: " value={playerStats.range} /> }
           { <SingleStat label="Critical Strike Chance: " value={critChance} percentage /> }
           { <SingleStat label="Chance to Evade: " value={evadeChance} percentage /> }
           { <SingleStat label="Chance to Block: " value={blockChance} percentage /> }
