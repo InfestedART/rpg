@@ -88,7 +88,7 @@ export const WEAPON_STATS: Record<string, WeaponStatsType> = {
     bonusRange: 2,
   },
   'bow_0': {
-    baseDmg: 2,
+    baseDmg: 1,
     dmgDice: 6,
     name: 'Short Bow',
     damageType: 'pierce',

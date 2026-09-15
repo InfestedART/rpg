@@ -6,10 +6,11 @@ type TileProps = {
   // status?: 'active' | 'enemyInRange' | 'objectInRange' | ''
   status: string;
   piece: TileContent;
-  onClick: () => void;
+  icon?: React.ReactNode;
+  onClick?: () => void;
 }
 
-const Tile = ({ terrain, status, piece, onClick }: TileProps) => {
+const Tile = ({ terrain, status, piece, icon, onClick }: TileProps) => {
   const getPiece = (piece: TileContent) => {
     let label;
     switch(piece) {
@@ -26,7 +27,7 @@ const Tile = ({ terrain, status, piece, onClick }: TileProps) => {
 
   return (
     <div className={`tile ${terrain} ${status}`} onClick={onClick}>
-      {getPiece(piece)}
+      {icon || getPiece(piece)}
     </div>
   )
 } 

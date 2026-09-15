@@ -16,6 +16,8 @@ import Tile from './Tile';
 import MessageBox from './MessageBox';
 
 import './Dungeon.css';
+import type { CharClassType } from '@/types/characterTypes';
+import PlayerIcon from '@/components/PlayerIcon';
 
 const Dungeon = () => {
   const navigate = useNavigate();
@@ -50,8 +52,8 @@ const Dungeon = () => {
     || isInteracting 
     || gameState.attacksLeft < 1 
     || activePlayer.status.indexOf('stunned') > 0
-
-  // console.log('==> gameState', gameState)
+  
+  // console.log('==> gameState', gameState, activePlayer)
 
   return (
     <div className='main-game'>
@@ -135,16 +137,22 @@ const Dungeon = () => {
                     },
                       col.content
                     )
+
+                    const playerIcon = col.content === 'player' && (
+                      <PlayerIcon size={40} name={selectedCharacter.class as CharClassType} />
+                    )
+                    
                     return (
                       <Hover
                         enabled={isActive}
                         onHoverStart={() => showAttackRange(true)}
                         onHoverEnd={() => showAttackRange(false)}
+                        key={`tile_${rowIndex}_${colIndex}`}
                       >
                         <Tile 
-                          key={`tile_${rowIndex}_${colIndex}`}
                           terrain={col.terrain}
                           piece={col.content}
+                          icon={playerIcon}
                           status={cls}
                           onClick={() => handleTileClick({ row: rowIndex, col: colIndex })}
                         />

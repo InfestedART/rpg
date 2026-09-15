@@ -29,6 +29,7 @@ export interface UnitStatsT {
   stunChance?: number,
   bleedChance?: number,
   equipment?: Partial<Record<EquipmentSlot, string | null>>,
+  icon?: string,
 }
 
 export type EnemyWeaponPoolT = {
