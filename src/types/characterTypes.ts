@@ -1,5 +1,6 @@
 export type CharClassType = 'soldier' | 'wizard' | 'ranger' | 'warrior' | 'bandit';
 export type EnemyClassType = 'brigand' | 'skeleton' | 'rat' | 'dummy';
+export type ObjectClassType = 'chest' | 'button';
 // export type AllyClassType = ''
 export type EquipmentSlot = 'weapon1' | 'offhand' | 'helmet' | 'armour' | 'belt' | 'boots' | 'gloves' | 'trinket1' | 'trinket2' | 'quiver'
 

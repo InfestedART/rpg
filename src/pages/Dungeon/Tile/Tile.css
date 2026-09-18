@@ -49,5 +49,5 @@
 .tile.stone { background-color: #646464; }
 
 .tile.player { color: white; text-shadow: -1px 0 black, 0 1px black;}
-.tile.enemy { color: red; text-shadow: 1px 0 black, 0 1px black; }
+.tile.enemy { color: black; text-shadow: 1px 0 white, 0 1px white; }
 .tile.chest { color: #ffae18; text-shadow: 1px 0 black, 0 1px black; }

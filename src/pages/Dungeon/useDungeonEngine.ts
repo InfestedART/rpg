@@ -54,7 +54,7 @@ const useDungeonEngine = (): DungeonEngine => {
   const { messages, sendMessage } = useMessageLog();
 
   // state
-  const [selectedTile, setselectedTile] = useState<Position | null>(null)
+  const [selectedTile, setSelectedTile] = useState<Position | null>(null)
   const [gameState, setGameState] = useState<GameState>(
     inititalizeGameState(selectedCharacter, initialBoard)
   )
@@ -76,12 +76,12 @@ const useDungeonEngine = (): DungeonEngine => {
     } else if (isInteracting && isValidTarget(pos, validTargets) && isPieceAnObject(pos, gameState)) {
       handleInteract(pos);
     } else {
-      setselectedTile({row: pos.row, col: pos.col});
+      setSelectedTile({row: pos.row, col: pos.col});
     }
   }
 
   const handleAction = (action: ActionType) => {
-    setselectedTile(null)
+    setSelectedTile(null)
     if (action === 'interact') setIsInteracting(true)
       else if (action === 'attack') setIsAttacking(true)
   }

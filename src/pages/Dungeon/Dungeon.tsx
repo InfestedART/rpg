@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 
 import { getEnemiesInRange, getObjectsInRange } from '@/utils/dungeon.utils';
+import { getPieceIcon } from '@/utils/board.utils';
 import { useCharacterStore } from '@/store/characterStore';
 import useDungeonEngine from './useDungeonEngine';
 
@@ -16,8 +17,6 @@ import Tile from './Tile';
 import MessageBox from './MessageBox';
 
 import './Dungeon.css';
-import type { CharClassType } from '@/types/characterTypes';
-import PlayerIcon from '@/components/PlayerIcon';
 
 const Dungeon = () => {
   const navigate = useNavigate();
@@ -53,7 +52,7 @@ const Dungeon = () => {
     || gameState.attacksLeft < 1 
     || activePlayer.status.indexOf('stunned') > 0
   
-  // console.log('==> gameState', gameState, activePlayer)
+  // console.log('==> gameState', gameState)
 
   return (
     <div className='main-game'>
@@ -127,19 +126,15 @@ const Dungeon = () => {
                     const canAttack = isAttacking && (
                       playerIsHuman ? col.content === 'enemy' : (col.content === 'player' || col.content === 'ally')
                     )
-                    const isValid = canInteract || canAttack;
+                    const isTargetValid = canInteract || canAttack;
 
                     const cls = clsx({
                       active: isActive,
                       selected: isSelected,
                       ['in-range']: inRange,
-                      valid: inRange && isValid,
+                      valid: inRange && isTargetValid,
                     },
                       col.content
-                    )
-
-                    const playerIcon = col.content === 'player' && (
-                      <PlayerIcon size={40} name={selectedCharacter.class as CharClassType} />
                     )
                     
                     return (
@@ -152,7 +147,12 @@ const Dungeon = () => {
                         <Tile 
                           terrain={col.terrain}
                           piece={col.content}
-                          icon={playerIcon}
+                          icon={getPieceIcon(
+                            col.content,
+                            { row: rowIndex, col: colIndex },
+                            gameState,
+                            selectedCharacter
+                          )}
                           status={cls}
                           onClick={() => handleTileClick({ row: rowIndex, col: colIndex })}
                         />
