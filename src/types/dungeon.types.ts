@@ -1,4 +1,5 @@
 import type { CharClassType, EnemyClassType, EquipmentSlot } from "./characterTypes";
+import type { ChestTier } from "./loot.types";
 
 export type TileTerrain = 'land' | 'stone' | 'grass' | 'water'; 
 export type TileContent = 'player' | 'ally' | 'enemy' | 'obstacle' | 'chest' | 'button' | 'empty';
@@ -42,7 +43,7 @@ export interface Unit {
 export interface UsableObject {
   type: TileContent,
   position: Position,
-  // loot?: Loot
+  chestTier?: ChestTier
 }
 
 export interface GameState {

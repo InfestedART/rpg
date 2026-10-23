@@ -1,8 +1,7 @@
-import { ITEM_STATS } from "@/constants/itemStats.constants"
-import type { ShieldStatsType, WeaponStatsType } from "@/types/itemTypes"
-import './EquipmentStats.css'
 import Tooltip from "@/components/Tooltip"
-import { round } from "@/utils/utils"
+import { ITEM_STATS } from "@/constants/itemStats.constants"
+import { getItemDetails } from "@/utils/item.utils"
+import './EquipmentStats.css'
 
 type EquipmentStatsProps = {
   slot: string,
@@ -11,26 +10,8 @@ type EquipmentStatsProps = {
 
 const EquipmentStats = ({ slot, itemId }: EquipmentStatsProps) => {
   const itemStats = ITEM_STATS[itemId]
-  // console.log('==> Item', itemStats)
 
-  let details = '';
-  switch (itemStats.itemType) {
-    case 'offhand': {
-      const { blockChance, evadeChance } = itemStats as ShieldStatsType;
-      if (blockChance) { details += `Block Chance: +${round(blockChance*100, 2)}% \n` }
-      if (evadeChance) { details += `Evade Chance: +${round(evadeChance*100, 2)}% \n` }
-      break;
-    }
-    case 'weapon': {
-      const { baseDmg, dmgDice, stunChance, bonusCritChance, bleedChance, bonusRange } = itemStats as WeaponStatsType;
-      details += `Damage: ${baseDmg}-${baseDmg + dmgDice} \n`
-      if (bonusCritChance) { details += `Critical Chance: +${round(bonusCritChance*100, 2)}% \n` }
-      if (bleedChance) { details += `Chance to Bleed: +${round(bleedChance*100, 2)}% \n` }
-      if (stunChance) { details += `Stun Chance: +${round(stunChance*100, 2)}% \n` }
-      if (bonusRange) { details += `Range: +${bonusRange} \n` }
-      break;
-    }
-  }
+  const details = getItemDetails(itemStats)
   return (
     <div>
       <span>{slot}: </span>

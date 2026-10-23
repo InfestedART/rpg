@@ -2,14 +2,14 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 import { DIRECTION_MAP, DIRECTIONS, DUNGEON_SIZE } from "@/constants/dungeon.contants";
 
-import type { ActionType, Board, GameState, Position, UnitStatus } from "@/types/dungeon.types";
+import type { ActionType, Board, GameState, Position, UnitStatus, UsableObject } from "@/types/dungeon.types";
 
 import { useDungeonStore } from '@/store/dungeonStore';
 import { useCharacterStore } from "@/store/characterStore";
 
 import useMessageLog from "./MessageBox/useMessageLog";
 
-import { clamp, randomNumber } from "@/utils/utils";
+import { clamp, randomNumber, rollChance, selectRandomItem } from "@/utils/utils";
 import {
   buildDungeon,
   getUnitId,
@@ -24,11 +24,13 @@ import {
   getLegalTargets,
   getPositionInDirection,
 } from "@/utils/dungeon.utils";
-import { addGoldToCharacter } from "@/api/characters";
+import { addGoldToCharacter, addItemToInventory } from "@/api/characters";
 import { ALL_STATS } from "@/constants/unitStats.constants";
 import { getPlayerUnitStats, getUnitStats } from "@/utils/unit.utils";
 import type { MessageLogType } from "@/types/game.types";
 import type { CharacterType } from "@/types/characterTypes";
+import { CHEST_LOOT_TABLE } from "@/constants/lootTables.constants";
+import { ITEM_STATS } from "@/constants/itemStats.constants";
 
 type DungeonEngine = {
   board: Board,
@@ -97,19 +99,20 @@ const useDungeonEngine = (): DungeonEngine => {
       console.error('==> No Target Unit');
       return;
     }
+
     const targetUnit = gameState.units[targetUnitId]
     const attackerStats = activePlayer.type === 'player' 
       ? getPlayerUnitStats(selectedCharacter as CharacterType)  //TODO: fallout if !selectedCharacter
-      : getUnitStats(ALL_STATS[activePlayer.class])
+      : getUnitStats(ALL_STATS[activePlayer.class], activePlayer.equipment)
     const targetStats = targetUnit.type === 'player' 
       ? getPlayerUnitStats(selectedCharacter as CharacterType)
-      : getUnitStats(ALL_STATS[targetUnit.class])
+      : getUnitStats(ALL_STATS[targetUnit.class], activePlayer.equipment)
 
     const baseDamage = attackerStats.baseDmg + randomNumber(1, attackerStats.dmgDice);
 
-    const criticalHit = Math.random() <= (attackerStats.critChance || 0);
-    const blocked = Math.random() <= (targetStats.blockChance || 0);
-    const evaded = Math.random() <= (targetStats.evadeChance || 0);
+    const criticalHit = rollChance(attackerStats.critChance);
+    const blocked = rollChance(targetStats.blockChance);
+    const evaded = rollChance(targetStats.evadeChance);
 
     let attackDmg = criticalHit ? baseDamage * 1.5 : baseDamage
     if (blocked) { attackDmg = attackDmg * 0.5 }
@@ -117,15 +120,11 @@ const useDungeonEngine = (): DungeonEngine => {
     // STATUS CHANGE
     const targetStatus: UnitStatus[] = []
 
-    if (attackerStats.stunChance) {
-      if (Math.random() <= attackerStats.stunChance) { targetStatus.push('stunned') }
-    }
-    if (attackerStats.stunChance) {
-      if (Math.random() <= attackerStats.stunChance) { targetStatus.push('bleeding') }
-    }
+    if (rollChance(targetStats.stunChance)) { targetStatus.push('stunned') }
+    if (rollChance(targetStats.bleedChance)) { targetStatus.push('bleeding') }
 
     // TARGET IS DEAD?
-    const remainingHp = evaded ? 0 : targetUnit.currentHp - attackDmg
+    const remainingHp = evaded ? targetUnit.currentHp  : targetUnit.currentHp - attackDmg
     const { [targetUnitId]: removed, ...remainingUnits } = gameState.units
     const newUnitList = remainingHp <= 0 ? remainingUnits : {
       ...gameState.units,
@@ -192,9 +191,9 @@ const useDungeonEngine = (): DungeonEngine => {
       objects: remainingObjects
     }
 
-    const goldAmount = randomNumber(1, 10) + 4;
-    selectedCharacter && addGoldToCharacter(selectedCharacter?.id, goldAmount) // add async?
-    sendMessage(`You found ${goldAmount} gold in the Chest`, 'info');
+    if (targetObject && targetObject.type === 'chest') {
+      generateChestLoot(targetObject)
+    }
 
     checkDungeonComplete(newGameState)
     setBoard(newBoard);
@@ -234,7 +233,7 @@ const useDungeonEngine = (): DungeonEngine => {
     const targets: Position[] = [];
     const activeUnitStats = activeUnit.type === 'player' 
       ? getPlayerUnitStats(selectedCharacter as CharacterType)
-      : getUnitStats(ALL_STATS[activeUnit.class])
+      : getUnitStats(ALL_STATS[activeUnit.class], activePlayer.equipment)
     const legalTargets= getLegalTargets(activeUnit.type, 'enemy');
     const obstacles = ['chest', 'wall']
     
@@ -268,17 +267,15 @@ const useDungeonEngine = (): DungeonEngine => {
     const targets: Position[] = [];
     const activeUnitStats = activeUnit.type === 'player' 
       ? getPlayerUnitStats(selectedCharacter as CharacterType)
-      : getUnitStats(ALL_STATS[activeUnit.class])
+      : getUnitStats(ALL_STATS[activeUnit.class], activePlayer.equipment)
     const unitRange = targetType === 'enemy' ? activeUnitStats.range : 1
     const legalTargets = getLegalTargets(activeUnit.type, targetType)
     const obstacles = targetType === 'enemy' ? ['chest', 'wall'] : []
     
     for (const dir of filteredDirections) {
-      // const path: Position[] = [];
       for (let distance = 1; distance <= unitRange; distance++) {
         const position = getPositionInDirection(pos, dir, distance);
         if (!isInBounds(position, DUNGEON_SIZE[dungeonSize])) { break; }
-        // path.push(position);
 
         const tile = board[position.row][position.col]
         if (tile) {
@@ -286,7 +283,6 @@ const useDungeonEngine = (): DungeonEngine => {
           if (legalTargets.includes(tile.content)) {
             targets.push(position);
           }
-          // break;
         }
       }
     }
@@ -305,6 +301,33 @@ const useDungeonEngine = (): DungeonEngine => {
       ? getUnitAttackRange(currentPosition, currentPlayer)
       : getValidTargets(currentPosition, currentPlayer)
     setValidTargets(targets);
+  }
+
+  const generateChestLoot = (targetObject: UsableObject) => {
+      const lootTable = CHEST_LOOT_TABLE[targetObject.chestTier || 'chest0']
+      if (selectedCharacter && lootTable.goldChance) {
+        const { goldBase, goldDice } = lootTable.goldChance;
+        const goldAmount =  goldBase + randomNumber(1, goldDice)
+        addGoldToCharacter(selectedCharacter?.id, goldAmount)
+        sendMessage(`You found ${goldAmount} gold in the Chest`, 'info');
+      }
+      if (selectedCharacter && lootTable.itemChance) {
+        const { chance, itemPool, magicChance, tier } = lootTable.itemChance
+        if (rollChance(chance)) {
+          const allItems = Object.entries(ITEM_STATS)
+          const itemType = selectRandomItem(itemPool)
+          const isMagic = rollChance(magicChance)
+          const elligibleItems = allItems.filter(item => {
+            return item[1].tier === tier && item[1].itemClass === itemType
+          })
+          const chosenItem = selectRandomItem(elligibleItems)
+          const itemId = chosenItem[0]
+
+          console.log('==> LOOT:', itemId, isMagic && 'magic', selectedCharacter);
+          addItemToInventory(selectedCharacter.id, itemId, selectedCharacter.inventory || [])
+          sendMessage(`You found a ${chosenItem[1].name} in the Chest`, 'info');
+        }
+      }
   }
 
   const finishTurn = useCallback(() => {

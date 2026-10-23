@@ -1,6 +1,8 @@
 import { STARTING_WEAPONS } from "@/constants/classOptions";
 import { characterSchema } from "@/schemas/character.schema";
-import type { EquipmentSlot } from "@/types/characterTypes";
+import type {  EquipmentType } from "@/types/characterTypes";
+import type { SlotType } from "@/types/itemTypes";
+import { removeFromArray } from "@/utils/utils";
 import type { z } from "zod";
 
 type CharacterFormData = z.infer<typeof characterSchema>
@@ -18,22 +20,20 @@ export const getAllCharacters = async () => {
 }
 
 export const createCharacter = async (data: CharacterFormData) => {
-  const emptyEquipment: Record<EquipmentSlot, string | null> = {
-    weapon1: null,
+  const emptyEquipment: Record<SlotType, string | null> = {
+    weapon: null,
     offhand: null,
     helmet: null,
-    armour: null,
-    belt: null,
+    armor: null,
     boots: null,
     gloves: null,
-    trinket1: null,
-    trinket2: null,
-    quiver: null,
+    amulet: null,
+    accesory: null
   };
 
-  const equipment: Record<EquipmentSlot, string | null> = {
+  const equipment: Record<SlotType, string | null> = {
     ...emptyEquipment,
-    weapon1: STARTING_WEAPONS[data.equipment][0] ?? null,
+    weapon: STARTING_WEAPONS[data.equipment][0] ?? null,
     offhand: STARTING_WEAPONS[data.equipment][1] ?? null,
   };
 
@@ -84,4 +84,67 @@ export const addGoldToCharacter = async (id: number, goldAmount: number) => {
     throw new Error(errorData?.error ?? `Failed to add ${goldAmount} gold to character with id ${id}`);
   }
   return response.json()
+}
+
+export const updateEquipment = async (id: number, equipment: EquipmentType) => {
+  // console.log('==> update_equipment', id, equipment)
+  const response = await fetch(
+    `${baseUrl}/characters/${id}/update_equipment`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ equipment }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.error ?? `Failed to update equipment for character with id ${id}`);
+  }
+  return response.json()
+}
+
+export const updateInventory = async (id: number, inventory: string[]) => {
+  const response = await fetch(
+    `${baseUrl}/characters/${id}/update_inventory`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inventory }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.error ?? `Failed to update inventory for character ${id}`);
+  }
+
+  return response.json();
+}
+
+
+export const updateItems = async (id: number, equipment: EquipmentType, inventory: string[]) => {
+  // console.log('==> update_equipment', id, equipment)
+  const response = await fetch(
+    `${baseUrl}/characters/${id}/update_items`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ equipment, inventory }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.error ?? `Failed to update character with id ${id}`);
+  }
+  return response.json()
+}
+
+export const addItemToInventory = async (id: number, newItem: string, inventory: string[]) => {
+  return updateInventory(id, [...inventory, newItem]);
+}
+
+export const removeItemFromInventory = async (id: number, deletedItem: string, inventory: string[]) => {
+  return updateInventory(id, removeFromArray(inventory, deletedItem));
 }

@@ -4,7 +4,8 @@ import SingleStat from "../SingleStat";
 import { capitalize } from "@/utils/utils";
 import { getPlayerUnitStats } from "@/utils/unit.utils";
 
-import type { CharacterType } from "@/types/characterTypes";
+import type { CharacterType, StatsId } from "@/types/characterTypes";
+import { STATS_LABELS } from "@/constants/unitStats.constants";
 
 type PlayerStatsProps = {
   selectedCharacter: CharacterType
@@ -15,7 +16,6 @@ const PlayerStats = ({ selectedCharacter }: PlayerStatsProps) => {
 
   const equipedItems = Object.entries(selectedCharacter.equipment)
   const playerStats = getPlayerUnitStats(selectedCharacter);
-  const { critChance, evadeChance, blockChance, stunChance, bleedChance } = playerStats
   
   const minDmg = playerStats.baseDmg
   const maxDmg = minDmg + playerStats.dmgDice 
@@ -27,15 +27,14 @@ const PlayerStats = ({ selectedCharacter }: PlayerStatsProps) => {
 
       <div>
         <span>Stats: </span>
-        <div className="ml-3">
-          <SingleStat label="HP: " value={playerStats.baseHp} />
+        <div className="ml-3">          
           <SingleStat label="Damage: " value={`${minDmg}-${maxDmg}`} />
-          { playerStats.range > 1 && <SingleStat label="Attack Range: " value={playerStats.range} /> }
-          { <SingleStat label="Critical Strike Chance: " value={critChance} percentage /> }
-          { <SingleStat label="Chance to Evade: " value={evadeChance} percentage /> }
-          { <SingleStat label="Chance to Block: " value={blockChance} percentage /> }
-          { <SingleStat label="Chance to Stun: " value={stunChance} percentage /> }
-          { <SingleStat label="Chance to cause Bleeding: " value={bleedChance} percentage /> }
+          { Object.entries(playerStats).map(stat => {
+            const statsLabel = STATS_LABELS[stat[0] as StatsId]
+            return statsLabel ? (
+              <SingleStat label={statsLabel.label} percentage={statsLabel.percentage} value={stat[1]} key={stat[0]}/>
+            ) : null
+          })}
         </div>
       </div>
 

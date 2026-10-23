@@ -64,7 +64,7 @@ export const ARMOUR_BY_CLASS: Record<CharClassType, SelectOptions>  = {
 }
 
 export const CLASS_ICONS: Record<CharClassType, string> = {
-  soldier: '',
+  soldier: 'soldier.svg',
   ranger: 'ranger.svg',
   warrior: 'warrior.svg',
   wizard: '',

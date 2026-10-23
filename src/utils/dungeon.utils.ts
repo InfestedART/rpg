@@ -1,8 +1,9 @@
 import { ALL_STATS } from "@/constants/unitStats.constants";
-import type { CharacterType, EnemyClassType } from "@/types/characterTypes";
+import type { CharacterType, CharClassType, EnemyClassType } from "@/types/characterTypes";
 import type { Board, GameState, InitialBoard, TileTerrain, Unit, Position, UsableObject, UnitType } from "@/types/dungeon.types";
 import { randomNumber, selectRandomItem } from "./utils";
 import { ENEMY_WEAPON_POOL } from "@/constants/enemy.constants";
+import { PLAYER_STARTING_CHESTS } from "@/constants/lootTables.constants";
 
 export const isInBounds = (pos: Position, size: number) => (
   pos.row >= 0 && pos.row < size && pos.col >= 0 && pos.col < size
@@ -42,6 +43,10 @@ export const inititalizeGameState = (
       objects[Number(key)] = {
         type: piece.type,
         position: initialBoard[Number(key)].position
+      }
+      if (piece.type === 'chest') {
+        const chestType = selectRandomItem(PLAYER_STARTING_CHESTS[selectedCharacter?.class as CharClassType])
+        objects[Number(key)].chestTier = chestType
       }
     } 
   };

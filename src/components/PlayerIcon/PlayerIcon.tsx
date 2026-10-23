@@ -1,11 +1,12 @@
 import RangerIcon from '@/assets/icons/classes/ranger.svg?react'
 import WarriorIcon from '@/assets/icons/classes/warrior.svg?react'
+import SoldierIcon from '@/assets/icons/classes/soldier.svg?react'
 import type { CharClassType } from '@/types/characterTypes'
 
 const icons: Record<CharClassType, React.FC<React.SVGProps<SVGSVGElement>>> = {
   ranger: RangerIcon,
   warrior: WarriorIcon,
-  soldier: WarriorIcon,
+  soldier: SoldierIcon,
   bandit: WarriorIcon,
   wizard: RangerIcon,
 }

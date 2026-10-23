@@ -12,9 +12,10 @@ import Sidebar from '@/components/Layout/Sidebar';
 import Input from '@/components/Input';
 import type { InitialBoard, Position, TileTerrain } from '@/types/dungeon.types';
 import { useCharacterStore } from '@/store/characterStore';
-import type { EnemyClassType } from '@/types/characterTypes';
+import type { CharacterType, EnemyClassType } from '@/types/characterTypes';
 import SidebarSection from '@/components/Layout/Sidebar/SidebarSection';
 import { getCharacterById } from '@/api/characters';
+import Inventory from './Inventory';
 
 // TODO: move these to constants
 const actions = [
@@ -49,11 +50,13 @@ const Game = () => {
     else {
       const fetchCharacter = async () => {
         try {
-          const char = await getCharacterById(selectedCharacterId)
-          setSelectedCharacter({
-            ...char,
-            equipment: JSON.parse(char.equipment)
-          });
+          const character = await getCharacterById(selectedCharacterId)
+          const characterStats = {
+            ...character,
+            equipment: JSON.parse(character.equipment),
+            inventory: JSON.parse(character.inventory),
+          }
+          setSelectedCharacter(characterStats);
         } catch (err) {
           console.error('Failed to load character', err);
         }
@@ -183,11 +186,18 @@ const Game = () => {
 
       <div className='game-container'>
         <aside className='game-panel center'>
-          <h2>CHARACTER</h2>
-          {selectedCharacter 
-            && selectedAction === 'stats'
-            && <PlayerStats selectedCharacter={selectedCharacter} />
-          }
+          {selectedCharacter && selectedAction === 'stats' && (
+            <>
+              <h2>CHARACTER</h2>
+              <PlayerStats selectedCharacter={selectedCharacter} />
+            </>          
+          )}
+          {selectedCharacter && selectedAction === 'inventory' && (
+            <>
+              <h2>INVENTORY</h2>
+              <Inventory inventory={selectedCharacter.inventory || []} />
+            </>
+          )}
         </aside>
       </div>
     </div>
