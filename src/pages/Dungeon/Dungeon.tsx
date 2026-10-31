@@ -39,7 +39,7 @@ const Dungeon = () => {
   if (!selectedCharacter) return null;
 
   const activePlayer = gameState.units[gameState.currentPlayer];
-  const playerIsHuman = activePlayer.type === 'player'|| activePlayer.type === 'ally'
+  const playerIsHuman = activePlayer && (activePlayer.type === 'player'|| activePlayer.type === 'ally')
   const objectsInRange = getObjectsInRange(gameState, validTargets)
   const enemiesInRange = getEnemiesInRange(activePlayer, gameState, validTargets);
 
@@ -53,6 +53,7 @@ const Dungeon = () => {
     || activePlayer.status.indexOf('stunned') > 0
   
   // console.log('==> gameState', gameState)
+  // console.log('==> Board', board)
 
   return (
     <div className='main-game'>
@@ -63,7 +64,7 @@ const Dungeon = () => {
       <Sidebar side='left' isOpen={true} title='ACTIONS'>
         <div className='dungeon-sidebar'>
           <SidebarSection title="PLAYER INFO">
-            <UnitStats unit={activePlayer} gameState={gameState} isActive={true} />
+            { activePlayer && (<UnitStats unit={activePlayer} gameState={gameState} isActive={true} />) }
           </SidebarSection>
           <SidebarSection title="ACTIONS">
             {objectsInRange > 0 && (
@@ -117,12 +118,12 @@ const Dungeon = () => {
               {board.map((row, rowIndex) => (
                 <div key={rowIndex} className='flex'>
                   {row.map((col, colIndex) => {
-                    const currentPlayerPosition = gameState.units[gameState.currentPlayer].position;
-                    const isActive = currentPlayerPosition.col === colIndex && currentPlayerPosition.row === rowIndex;
-                    const isSelected = selectedTile?.row === rowIndex && selectedTile.col === colIndex;
+                    const currentPlayerPosition = activePlayer?.position;
+                    const isActive = currentPlayerPosition?.col === colIndex && currentPlayerPosition?.row === rowIndex;
+                    const isSelected = selectedTile?.row === rowIndex && selectedTile?.col === colIndex;
                     const inRange = validTargets.some(target => target.row === rowIndex && target.col === colIndex);
 
-                    const canInteract = isInteracting && (col.content === 'button' || col.content === 'chest');
+                    const canInteract = isInteracting && col.content === 'chest';
                     const canAttack = isAttacking && (
                       playerIsHuman ? col.content === 'enemy' : (col.content === 'player' || col.content === 'ally')
                     )
@@ -148,7 +149,7 @@ const Dungeon = () => {
                           terrain={col.terrain}
                           piece={col.content}
                           icon={getPieceIcon(
-                            col.content,
+                            col,
                             { row: rowIndex, col: colIndex },
                             gameState,
                             selectedCharacter

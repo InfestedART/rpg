@@ -4,6 +4,7 @@ import type { Board, GameState, InitialBoard, TileTerrain, Unit, Position, Usabl
 import { randomNumber, selectRandomItem } from "./utils";
 import { ENEMY_WEAPON_POOL } from "@/constants/enemy.constants";
 import { PLAYER_STARTING_CHESTS } from "@/constants/lootTables.constants";
+import { getPlayerUnitStats, getUnitStats } from "./unit.utils";
 
 export const isInBounds = (pos: Position, size: number) => (
   pos.row >= 0 && pos.row < size && pos.col >= 0 && pos.col < size
@@ -18,8 +19,21 @@ export const inititalizeGameState = (
   const objects: Record<number, UsableObject> = {}
 
   for (const [key, piece] of Object.entries(initialBoard)) {
+    if (piece.type === 'enemy' && piece.class) {
+      const weaponPool = ENEMY_WEAPON_POOL[(piece.class as EnemyClassType)]
+      if (weaponPool) {
+        const hasWeapon = Math.random() < weaponPool.chance
+        if (hasWeapon) {
+          const enemyWeapon = selectRandomItem(weaponPool.weapons)
+          units[Number(key)].equipment = { [weaponPool.slot]: enemyWeapon}
+        }
+      }
+    }
     if (piece.type === 'player' || piece.type === 'enemy' || piece.type === 'ally') {
-      const unitStats = ALL_STATS[piece.class || 'dummy']
+      const baseStats = ALL_STATS[piece.class || 'dummy']
+      const unitStats = piece.type === 'player' 
+        ? getPlayerUnitStats(selectedCharacter as CharacterType)
+        : getUnitStats(baseStats, units[Number(key)]?.equipment)
       units[Number(key)] = {
         name: piece.type === 'player' && selectedCharacter ? selectedCharacter.name : `${piece.class || 'enemy'}_${key}`,
         type: piece.type,
@@ -27,19 +41,12 @@ export const inititalizeGameState = (
         currentHp: unitStats.baseHp,
         position: initialBoard[Number(key)].position,
         status: []
-      }    
+      }
+      if (unitStats.mana) { units[Number(key)].currentMana = unitStats.mana }
+      if (unitStats.magicShield) { units[Number(key)].currentMS = unitStats.magicShield }
     }
-    if (piece.type === 'enemy' && piece.class) {
-       const weaponPool = ENEMY_WEAPON_POOL[(piece.class as EnemyClassType)]
-       if (weaponPool) {
-        const hasWeapon = Math.random() < weaponPool.chance
-        if (hasWeapon) {
-          const enemyWeapon = selectRandomItem(weaponPool.weapons)
-          units[Number(key)].equipment = { [weaponPool.slot]: enemyWeapon}
-        }
-       }
-    }
-    if (piece.type === 'chest' || piece.type === 'button') {
+
+    if (piece.type === 'chest') {
       objects[Number(key)] = {
         type: piece.type,
         position: initialBoard[Number(key)].position
@@ -78,6 +85,24 @@ const addWaterToBoard = (dungeonSize: number, board: Board): Board => {
   return board
 }
 
+const addTrapsToBoard = (dungeonSize: number, board: Board, quantity: number): Board => {
+  const newBoard = [ ...board ]
+  let i = 0
+  while(i < quantity) {
+    const x = randomNumber(0, dungeonSize-1)
+    const y = randomNumber(0, dungeonSize-1)
+    if (board[x][y].terrain !== 'water' && board[x][y].content === 'empty' && !board[x][y].decal) {      
+      newBoard[x][y] = {
+        ...board[x][y],
+        decal: 'spikes'
+      }
+      i++;
+    }
+  }
+  
+  return newBoard;
+}
+
 export const buildDungeon = (
   dungeonSize: number,
   dungeonType: TileTerrain,
@@ -94,14 +119,15 @@ export const buildDungeon = (
     }
   }
 
-  const finalBoard = randomNumber(1, 2) % 2 === 0 ? addWaterToBoard(dungeonSize, board) : board
+  const waterBoard = randomNumber(1, 2) % 2 === 0 ? addWaterToBoard(dungeonSize, board) : board
+  const finalBoard = addTrapsToBoard(dungeonSize, waterBoard, 2)
   return finalBoard;
 }
 
 export const getUnitsInBoard = (gameState: GameState) => gameState.units && Object.values(gameState.units);
 export const getObjectsInBoard = (gameState: GameState) => gameState.objects && Object.values(gameState.objects);
 export const getEnemiesInBoard = (activePlayer: Unit, gameState: GameState) => {
-  const playerIsHuman = activePlayer.type === 'player'|| activePlayer.type === 'ally';
+  const playerIsHuman = activePlayer && (activePlayer.type === 'player'|| activePlayer.type === 'ally')
   const unitsInBoard = getUnitsInBoard(gameState);
   return playerIsHuman
     ? Object.values(unitsInBoard).filter(unit => unit.type === 'enemy')

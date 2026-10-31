@@ -12,7 +12,7 @@ import Sidebar from '@/components/Layout/Sidebar';
 import Input from '@/components/Input';
 import type { InitialBoard, Position, TileTerrain } from '@/types/dungeon.types';
 import { useCharacterStore } from '@/store/characterStore';
-import type { CharacterType, EnemyClassType } from '@/types/characterTypes';
+import type { EnemyClassType } from '@/types/characterTypes';
 import SidebarSection from '@/components/Layout/Sidebar/SidebarSection';
 import { getCharacterById } from '@/api/characters';
 import Inventory from './Inventory';

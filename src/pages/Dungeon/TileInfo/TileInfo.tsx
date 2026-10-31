@@ -43,7 +43,7 @@ const TileInfo = ({ selectedTile, gameState, board }: TileInfoProps ) => {
   if (!selectedCharacter) return;
   const tile = board[selectedTile.row][selectedTile.col];
   const isTileEmpty = tile.content === 'empty';
-  const icon = getPieceIcon(tile.content, selectedTile, gameState, selectedCharacter)
+  const icon = getPieceIcon(tile, selectedTile, gameState, selectedCharacter)
 
   return (
     <div className="terrain-info">

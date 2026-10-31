@@ -47,7 +47,13 @@ const UnitStats = ({ unit, gameState, isActive }: UnitStatsProps) => {
     <div>
       <SingleStat label={'Name: '} value={unit.name} />
       <SingleStat label={'Class: '} value={capitalize(unit.class)} />
-      <SingleStat label={'HP: '} value={`${unit.currentHp}/${baseStats.baseHp}`} />
+      <SingleStat label={'HP: '} value={`${unit.currentHp}/${unitStats.baseHp}`} />
+      {unitStats.magicShield && (
+        <SingleStat label={'Magic Shield: '} value={`${unit.currentMS || 0}/${unitStats.magicShield}`} />
+      )}
+      {unitStats.mana && (
+        <SingleStat label={'Mana: '} value={`${unit.currentMana || 0}/${unitStats.mana}`} />
+      )}
       {isActive && (
         <div className="mt-2">
           <SingleStat label={'Position: '} value={`${unit.position.col}, ${unit.position.row}`} />          
