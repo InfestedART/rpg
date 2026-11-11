@@ -9,7 +9,7 @@ export type GlovesType = 'gloves' | 'gauntlets' | 'fingerless'
 export type BootsType = 'boots' | 'greaves' | 'shoes'
 export type HelmetType = 'helmet' | 'headwear' | 'circlet'
 
-export type SlotType = 'weapon' | 'offhand' | 'armor' | 'helmet' | 'boots' | 'gloves' | 'amulet' | 'accesory'
+export type SlotType = 'weapon' | 'offhand' | 'armor' | 'helmet' | 'boots' | 'gloves' | 'amulet' | 'accessory'
 
 export interface ItemBaseStats {
   name: string,

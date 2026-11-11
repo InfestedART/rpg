@@ -33,6 +33,8 @@ const Dungeon = () => {
     isAttacking,
     handleTileClick,
     messages,
+    floatingTexts,
+    removeFloatingText,
     showAttackRange,
   } = useDungeonEngine();
   const { selectedCharacter } = useCharacterStore();
@@ -137,6 +139,10 @@ const Dungeon = () => {
                     },
                       col.content
                     )
+
+                    const fText = floatingTexts.length > 0 ? floatingTexts.find(text => (
+                        text.position.col === colIndex && text.position.row === rowIndex
+                      )) : undefined
                     
                     return (
                       <Hover
@@ -156,6 +162,8 @@ const Dungeon = () => {
                           )}
                           status={cls}
                           onClick={() => handleTileClick({ row: rowIndex, col: colIndex })}
+                          floatingText={fText}
+                          removeFloatingText={removeFloatingText}
                         />
                       </Hover>
                     )

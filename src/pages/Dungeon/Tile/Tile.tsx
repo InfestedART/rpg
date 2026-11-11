@@ -1,5 +1,6 @@
-import type { TileContent, TileTerrain } from '@/types/dungeon.types';
+import type { FloatingTextT, TileContent, TileTerrain } from '@/types/dungeon.types';
 import './Tile.css';
+import FloatingText from '@/components/FloatingText';
 
 type TileProps = {
   terrain: TileTerrain;
@@ -8,9 +9,19 @@ type TileProps = {
   piece: TileContent;
   icon?: React.ReactNode;
   onClick?: () => void;
+  floatingText?: FloatingTextT;
+  removeFloatingText: (id: string) => void;
 }
 
-const Tile = ({ terrain, status, piece, icon, onClick }: TileProps) => {
+const Tile = ({
+  terrain,
+  status,
+  piece,
+  icon,
+  onClick,
+  floatingText,
+  removeFloatingText
+}: TileProps) => {
   const getPiece = (piece: TileContent) => {
     let label;
     switch(piece) {
@@ -25,9 +36,20 @@ const Tile = ({ terrain, status, piece, icon, onClick }: TileProps) => {
     return label;
   }
 
+  // floatingText && console.log('==> tile', floatingText)
+
   return (
-    <div className={`tile ${terrain} ${status}`} onClick={onClick}>
-      {icon || getPiece(piece)}
+    <div className="relative">
+      <div className={`tile ${terrain} ${status}`} onClick={onClick}>
+        {icon || getPiece(piece)}
+      </div>
+      { floatingText && (
+        <FloatingText
+          type={floatingText.type}
+          value={floatingText.value}
+          onDone={() => removeFloatingText(floatingText.id)}
+        />
+      )}
     </div>
   )
 } 

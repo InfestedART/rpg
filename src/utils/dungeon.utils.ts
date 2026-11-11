@@ -19,16 +19,6 @@ export const inititalizeGameState = (
   const objects: Record<number, UsableObject> = {}
 
   for (const [key, piece] of Object.entries(initialBoard)) {
-    if (piece.type === 'enemy' && piece.class) {
-      const weaponPool = ENEMY_WEAPON_POOL[(piece.class as EnemyClassType)]
-      if (weaponPool) {
-        const hasWeapon = Math.random() < weaponPool.chance
-        if (hasWeapon) {
-          const enemyWeapon = selectRandomItem(weaponPool.weapons)
-          units[Number(key)].equipment = { [weaponPool.slot]: enemyWeapon}
-        }
-      }
-    }
     if (piece.type === 'player' || piece.type === 'enemy' || piece.type === 'ally') {
       const baseStats = ALL_STATS[piece.class || 'dummy']
       const unitStats = piece.type === 'player' 
@@ -45,7 +35,16 @@ export const inititalizeGameState = (
       if (unitStats.mana) { units[Number(key)].currentMana = unitStats.mana }
       if (unitStats.magicShield) { units[Number(key)].currentMS = unitStats.magicShield }
     }
-
+    if (piece.type === 'enemy' && piece.class) {
+      const weaponPool = ENEMY_WEAPON_POOL[(piece.class as EnemyClassType)]
+      if (weaponPool) {
+        const hasWeapon = Math.random() < weaponPool.chance
+        if (hasWeapon) {          
+          const enemyWeapon = selectRandomItem(weaponPool.weapons)
+          units[Number(key)].equipment = { [weaponPool.slot]: enemyWeapon}
+        }
+      }
+    }
     if (piece.type === 'chest') {
       objects[Number(key)] = {
         type: piece.type,

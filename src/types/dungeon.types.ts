@@ -64,3 +64,13 @@ export type ActionType = 'attack' | 'interact';
 export type Debuff = 'stunned' | 'bleeding' | 'poisoned' | 'frozen' | 'slowed' | 'cursed' | 'shocked' | 'ignited'
 export type Buff = 'hasted' | 'blessed' | 'flying'
 export type UnitStatus = Debuff | Buff
+
+export type FloatingTextType = 'damage' | 'heal' | 'critical' | 'block' | 'miss'
+
+export type FloatingTextT = {
+  id: string,
+  type: FloatingTextType
+  value: number,
+  onDone?: () => void,
+  position: Position,
+}

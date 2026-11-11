@@ -35,7 +35,7 @@ const UnitStats = ({ unit, gameState, isActive }: UnitStatsProps) => {
       <div>
         <span>STATUS: </span>
          {status.map(debuff => (
-          <Tooltip content={<div>{STATUS_DESCRIPTIONS[debuff]}</div>}>
+          <Tooltip key={debuff} content={<div>{STATUS_DESCRIPTIONS[debuff]}</div>}>
             <span>{debuff}</span>
           </Tooltip>
          ))} 

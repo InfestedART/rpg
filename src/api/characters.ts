@@ -28,7 +28,7 @@ export const createCharacter = async (data: CharacterFormData) => {
     boots: null,
     gloves: null,
     amulet: null,
-    accesory: null
+    accessory: null, 
   };
 
   const equipment: Record<SlotType, string | null> = {
@@ -39,7 +39,7 @@ export const createCharacter = async (data: CharacterFormData) => {
 
   const newData = {
     ...data,
-    equipment: JSON.stringify(equipment)
+    equipment: equipment
   } 
 
   const response = await fetch(baseUrl + '/characters', {

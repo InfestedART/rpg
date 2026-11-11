@@ -21,8 +21,8 @@ const Inventory = ({ inventory }: InventoryProps) => {
     console.log(char);
     const updatedChar = {
       ...char,
-      equipment: JSON.parse(char.equipment),
-      inventory: JSON.parse(char.inventory),
+      equipment: char.equipment,
+      inventory: char.inventory,
     }
     setSelectedCharacter(updatedChar)
   }

@@ -1,8 +1,24 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 import { DIRECTION_MAP, DIRECTIONS, DUNGEON_SIZE } from "@/constants/dungeon.contants";
+import { ALL_STATS } from "@/constants/unitStats.constants";
+import { CHEST_LOOT_TABLE } from "@/constants/lootTables.constants";
+import { ITEM_STATS } from "@/constants/itemStats.constants";
 
-import type { ActionType, Board, GameState, Position, Unit, UnitStatus, UsableObject } from "@/types/dungeon.types";
+
+import type { MessageLogType } from "@/types/game.types";
+import type { CharacterType } from "@/types/characterTypes";
+import type {
+  ActionType,
+  Board,
+  FloatingTextT,
+  FloatingTextType,
+  GameState,
+  Position,
+  Unit,
+  UnitStatus,
+  UsableObject
+} from "@/types/dungeon.types";
 
 import { useDungeonStore } from '@/store/dungeonStore';
 import { useCharacterStore } from "@/store/characterStore";
@@ -10,6 +26,7 @@ import { useCharacterStore } from "@/store/characterStore";
 import useMessageLog from "./MessageBox/useMessageLog";
 
 import { clamp, randomNumber, rollChance, selectRandomItem } from "@/utils/utils";
+import { getPlayerUnitStats, getUnitStats } from "@/utils/unit.utils";
 import {
   buildDungeon,
   getUnitId,
@@ -24,13 +41,8 @@ import {
   getLegalTargets,
   getPositionInDirection,
 } from "@/utils/dungeon.utils";
+
 import { addGoldToCharacter, addItemToInventory } from "@/api/characters";
-import { ALL_STATS } from "@/constants/unitStats.constants";
-import { getPlayerUnitStats, getUnitStats } from "@/utils/unit.utils";
-import type { MessageLogType } from "@/types/game.types";
-import type { CharacterType } from "@/types/characterTypes";
-import { CHEST_LOOT_TABLE } from "@/constants/lootTables.constants";
-import { ITEM_STATS } from "@/constants/itemStats.constants";
 
 type DungeonEngine = {
   board: Board,
@@ -45,6 +57,8 @@ type DungeonEngine = {
   validTargets: Position[],
   boardRef: React.RefObject<HTMLDivElement | null>,
   messages: MessageLogType[],
+  floatingTexts: (FloatingTextT)[],
+  removeFloatingText: (id: string) => void,
   showAttackRange: (show: boolean) => void,
 }
 
@@ -52,7 +66,6 @@ const useDungeonEngine = (): DungeonEngine => {
   // stores
   const { dungeonSize, dungeonType, initialBoard } = useDungeonStore();
   const { selectedCharacter } = useCharacterStore();
-  // if (!selectedCharacter) return {};
   const { messages, sendMessage } = useMessageLog();
 
   // state
@@ -66,6 +79,7 @@ const useDungeonEngine = (): DungeonEngine => {
   const [validTargets, setValidTargets] = useState<Position[]>([])
   const [isInteracting, setIsInteracting] = useState<boolean>(false)
   const [isAttacking, setIsAttacking] = useState<boolean>(false)
+  const [floatingTexts, setFloatingTexts] = useState<FloatingTextT[]>([])
   
   const boardRef = useRef<HTMLDivElement>(null);
 
@@ -95,6 +109,14 @@ const useDungeonEngine = (): DungeonEngine => {
     setIsAttacking(false);
   }
 
+  const addFloatingText = useCallback((text: Omit<FloatingTextT, 'id'>) => {    
+    setFloatingTexts((prev) => [ ...prev, { ...text, id: crypto.randomUUID()}])
+  }, [])
+
+  const removeFloatingText = useCallback((id: string) => {
+    setFloatingTexts((prev) => prev.filter(item => item.id !== id))
+  }, [])
+
   const handleAttack = (pos: Position) => {
     const targetUnitId = getUnitId(pos, gameState);
     if (!targetUnitId) {
@@ -118,8 +140,8 @@ const useDungeonEngine = (): DungeonEngine => {
 
     // STATUS CHANGE
     const targetStatus: UnitStatus[] = []
-    if (rollChance(targetStats.stunChance)) { targetStatus.push('stunned') }
-    if (rollChance(targetStats.bleedChance)) { targetStatus.push('bleeding') }
+    if (rollChance(attackerStats.stunChance)) { targetStatus.push('stunned') }
+    if (rollChance(attackerStats.bleedChance)) { targetStatus.push('bleeding') }
 
     // TARGET IS DEAD?
     let remainingMs = 0
@@ -154,6 +176,10 @@ const useDungeonEngine = (): DungeonEngine => {
 
     if (evaded) { attackLog = `EVADED! ${targetUnit.name} dodged ${activePlayer.name}'s attack` }
     sendMessage(attackLog, specialLog ? 'warning' : 'info');
+
+    const floatingTextType: FloatingTextType = 
+      evaded ? 'miss' : (criticalHit ? 'critical' : (blocked ? 'block' : 'damage'))
+    addFloatingText({ type: floatingTextType, value: attackDmg, position: targetUnit.position })
 
     const newGameState = {
       ...gameState,
@@ -377,6 +403,8 @@ const useDungeonEngine = (): DungeonEngine => {
     let damageTaken = 0;
     if (board[newPosition.row][newPosition.col].decal === 'spikes') {
       damageTaken = 2 - (activeUnitStats.hazardProtection || 0)
+      sendMessage(`${activeUnit.name} stepped on a trap an took ${damageTaken} damage`, 'warning')
+      addFloatingText({ type: 'damage', value: damageTaken, position: newPosition })
     }
     if (isBleeding) { damageTaken += 1 }
             
@@ -477,6 +505,8 @@ const useDungeonEngine = (): DungeonEngine => {
     validTargets,
     boardRef,
     messages,
+    floatingTexts,
+    removeFloatingText,
     showAttackRange,
   };
 } 

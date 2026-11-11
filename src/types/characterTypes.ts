@@ -26,10 +26,10 @@ export interface CharacterResponse {
   class: CharClassType | EnemyClassType,
   level: number,
   exp: number,
-  equipment: string,
+  equipment: EquipmentType,
   gold: number,
   createdAt?: string,
-  inventory: string, 
+  inventory: string[], 
 }
 
 export interface AdditionalStatsT {

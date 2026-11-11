@@ -53,8 +53,8 @@ const Game = () => {
           const character = await getCharacterById(selectedCharacterId)
           const characterStats = {
             ...character,
-            equipment: JSON.parse(character.equipment),
-            inventory: JSON.parse(character.inventory),
+            equipment: character.equipment,
+            inventory: character.inventory,
           }
           setSelectedCharacter(characterStats);
         } catch (err) {
