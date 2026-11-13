@@ -29,3 +29,9 @@ export const DUNGEON_TYPE_OPTIONS: SelectOption[] = [
   { label: 'Cave', value: 'land'},
   { label: 'Dungeon', value: 'stone'},
 ]
+
+export const TILE_SIZE: number = 40
+
+export const DIRECTIONS: number[][] = [
+  [-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]
+];

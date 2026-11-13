@@ -35,7 +35,7 @@ const UnitStats = ({ unit, gameState, isActive }: UnitStatsProps) => {
       <div>
         <span>STATUS: </span>
          {status.map(debuff => (
-          <Tooltip content={<div>{STATUS_DESCRIPTIONS[debuff]}</div>}>
+          <Tooltip key={debuff} content={<div>{STATUS_DESCRIPTIONS[debuff]}</div>}>
             <span>{debuff}</span>
           </Tooltip>
          ))} 
@@ -47,7 +47,13 @@ const UnitStats = ({ unit, gameState, isActive }: UnitStatsProps) => {
     <div>
       <SingleStat label={'Name: '} value={unit.name} />
       <SingleStat label={'Class: '} value={capitalize(unit.class)} />
-      <SingleStat label={'HP: '} value={`${unit.currentHp}/${baseStats.baseHp}`} />
+      <SingleStat label={'HP: '} value={`${unit.currentHp}/${unitStats.baseHp}`} />
+      {unitStats.magicShield && (
+        <SingleStat label={'Magic Shield: '} value={`${unit.currentMS || 0}/${unitStats.magicShield}`} />
+      )}
+      {unitStats.mana && (
+        <SingleStat label={'Mana: '} value={`${unit.currentMana || 0}/${unitStats.mana}`} />
+      )}
       {isActive && (
         <div className="mt-2">
           <SingleStat label={'Position: '} value={`${unit.position.col}, ${unit.position.row}`} />          
@@ -69,6 +75,7 @@ const UnitStats = ({ unit, gameState, isActive }: UnitStatsProps) => {
         <span>STATS: </span>
           <div className='ml-2'>
             <SingleStat label="Damage: " value={`${unitStats.baseDmg}-${unitStats.baseDmg + unitStats.dmgDice}`} />
+            { unitStats.range > 1 && <SingleStat label="Attack Range: " value={unitStats.range} /> }
             { <SingleStat label="Critical Strike Chance: " value={unitStats.critChance} percentage /> }
             { <SingleStat label="Chance to Evade: " value={unitStats.evadeChance} percentage /> }
             { <SingleStat label="Chance to Block: " value={unitStats.blockChance} percentage /> }

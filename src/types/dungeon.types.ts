@@ -1,7 +1,9 @@
-import type { CharClassType, EnemyClassType, EquipmentSlot } from "./characterTypes";
+import type { CharClassType, EnemyClassType, EquipmentType } from "./characterTypes";
+import type { ChestTier } from "./loot.types";
 
 export type TileTerrain = 'land' | 'stone' | 'grass' | 'water'; 
-export type TileContent = 'player' | 'ally' | 'enemy' | 'obstacle' | 'chest' | 'button' | 'empty';
+export type TileContent = 'player' | 'ally' | 'enemy' | 'obstacle' | 'chest' | 'empty';
+export type TileDecal = 'button' | 'spikes' | 'lava'
 
 export type UnitType = Extract<TileContent, 'player' | 'ally' | 'enemy'>
 export type ObjectType = Extract<TileContent, 'chest' | 'button'>
@@ -14,6 +16,7 @@ export interface Position {
 export interface Tile {
   content: TileContent;
   terrain: TileTerrain;
+  decal?: TileDecal;
 }
 
 export type Board = Tile[][];
@@ -33,7 +36,9 @@ export interface Unit {
   type: UnitType,
   class: CharClassType | EnemyClassType, 
   currentHp: number,
-  equipment?: Partial<Record<EquipmentSlot, string | null>>,
+  currentMana?: number,
+  currentMS?: number,
+  equipment?: Partial<EquipmentType>,
   status: UnitStatus[],
   position: Position,
   // loot?: Loot  // on enemy defeat
@@ -42,7 +47,7 @@ export interface Unit {
 export interface UsableObject {
   type: TileContent,
   position: Position,
-  // loot?: Loot
+  chestTier?: ChestTier
 }
 
 export interface GameState {
@@ -59,3 +64,13 @@ export type ActionType = 'attack' | 'interact';
 export type Debuff = 'stunned' | 'bleeding' | 'poisoned' | 'frozen' | 'slowed' | 'cursed' | 'shocked' | 'ignited'
 export type Buff = 'hasted' | 'blessed' | 'flying'
 export type UnitStatus = Debuff | Buff
+
+export type FloatingTextType = 'damage' | 'heal' | 'critical' | 'block' | 'miss'
+
+export type FloatingTextT = {
+  id: string,
+  type: FloatingTextType
+  value: number,
+  onDone?: () => void,
+  position: Position,
+}

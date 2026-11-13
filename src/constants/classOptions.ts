@@ -1,3 +1,4 @@
+import type { CharClassType } from "@/types/characterTypes"
 import type { SelectOptions } from "@/types/game.types"
 
 export const CLASS_OPTIONS: SelectOptions[] = [
@@ -37,7 +38,7 @@ export const CLASS_OPTIONS: SelectOptions[] = [
   ]
 }
 
-export const ARMOUR_BY_CLASS: Record<string, SelectOptions>  = {
+export const ARMOUR_BY_CLASS: Record<CharClassType, SelectOptions>  = {
   soldier: { value: 'chainmail', label: 'Chainmail'},
   wizard: { value: 'padded', label: 'Padded Armour'},
   ranger: { value: 'robes', label: 'Acolyte Robes'},
@@ -51,7 +52,7 @@ export const ARMOUR_BY_CLASS: Record<string, SelectOptions>  = {
   mace_shield: ['mace_0', 'shield_0'],
   staff: ['staff_0'],
   spellbook_focus: ['spellbook_0', 'focus_0'],
-  bow_arrows: ['bow_0', 'quiver_0'],
+  bow_arrows: ['bow_0'],
   dual_daggers: ['dagger_0', 'dagger_0'],
   trowing_knives: ['t-knives_0', 'cloak_0'],
   sword_rapier: ['sword_0', 'rapier_0'],
@@ -60,4 +61,15 @@ export const ARMOUR_BY_CLASS: Record<string, SelectOptions>  = {
   '2h_mace': ['longmace_0'],
   crossbow: ['crossbow_0'],
   cloak_dagger: ['dagger_0', 'cloak_0'],
+}
+
+export const CLASS_ICONS: Record<CharClassType, string> = {
+  soldier: 'soldier.svg',
+  ranger: 'ranger.svg',
+  warrior: 'warrior.svg',
+  wizard: '',
+  bandit: ''
+}
+
+export const WEAPON_ICONS: Record<string, string> = {
 }

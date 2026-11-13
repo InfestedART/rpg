@@ -1,15 +1,32 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-import { DIRECTION_MAP, DUNGEON_SIZE } from "@/constants/dungeon.contants";
+import { DIRECTION_MAP, DIRECTIONS, DUNGEON_SIZE } from "@/constants/dungeon.contants";
+import { ALL_STATS } from "@/constants/unitStats.constants";
+import { CHEST_LOOT_TABLE } from "@/constants/lootTables.constants";
+import { ITEM_STATS } from "@/constants/itemStats.constants";
 
-import type { ActionType, Board, GameState, Position, UnitStatus } from "@/types/dungeon.types";
+
+import type { MessageLogType } from "@/types/game.types";
+import type { CharacterType } from "@/types/characterTypes";
+import type {
+  ActionType,
+  Board,
+  FloatingTextT,
+  FloatingTextType,
+  GameState,
+  Position,
+  Unit,
+  UnitStatus,
+  UsableObject
+} from "@/types/dungeon.types";
 
 import { useDungeonStore } from '@/store/dungeonStore';
 import { useCharacterStore } from "@/store/characterStore";
 
 import useMessageLog from "./MessageBox/useMessageLog";
 
-import { clamp, randomNumber } from "@/utils/utils";
+import { clamp, randomNumber, rollChance, selectRandomItem } from "@/utils/utils";
+import { getPlayerUnitStats, getUnitStats } from "@/utils/unit.utils";
 import {
   buildDungeon,
   getUnitId,
@@ -21,12 +38,11 @@ import {
   getEnemiesInRange,
   getObjectsInRange,
   getObjectId,
+  getLegalTargets,
+  getPositionInDirection,
 } from "@/utils/dungeon.utils";
-import { addGoldToCharacter } from "@/api/characters";
-import { ALL_STATS } from "@/constants/unitStats.constants";
-import { getPlayerUnitStats, getUnitStats } from "@/utils/unit.utils";
-import type { MessageLogType } from "@/types/game.types";
-import type { CharacterType } from "@/types/characterTypes";
+
+import { addGoldToCharacter, addItemToInventory } from "@/api/characters";
 
 type DungeonEngine = {
   board: Board,
@@ -40,18 +56,20 @@ type DungeonEngine = {
   handleTileClick: (pos: Position) => void,
   validTargets: Position[],
   boardRef: React.RefObject<HTMLDivElement | null>,
-  messages: MessageLogType[]
+  messages: MessageLogType[],
+  floatingTexts: (FloatingTextT)[],
+  removeFloatingText: (id: string) => void,
+  showAttackRange: (show: boolean) => void,
 }
 
 const useDungeonEngine = (): DungeonEngine => {
   // stores
   const { dungeonSize, dungeonType, initialBoard } = useDungeonStore();
   const { selectedCharacter } = useCharacterStore();
-  // if (!selectedCharacter) return {};
   const { messages, sendMessage } = useMessageLog();
 
   // state
-  const [selectedTile, setselectedTile] = useState<Position | null>(null)
+  const [selectedTile, setSelectedTile] = useState<Position | null>(null)
   const [gameState, setGameState] = useState<GameState>(
     inititalizeGameState(selectedCharacter, initialBoard)
   )
@@ -61,11 +79,14 @@ const useDungeonEngine = (): DungeonEngine => {
   const [validTargets, setValidTargets] = useState<Position[]>([])
   const [isInteracting, setIsInteracting] = useState<boolean>(false)
   const [isAttacking, setIsAttacking] = useState<boolean>(false)
+  const [floatingTexts, setFloatingTexts] = useState<FloatingTextT[]>([])
   
   const boardRef = useRef<HTMLDivElement>(null);
 
   const activePlayer = gameState.units[gameState.currentPlayer];  
-  // console.log('==> initialState', gameState);
+  const getPlayerStats = (unit: Unit) => unit.type === 'player' 
+    ? getPlayerUnitStats(selectedCharacter as CharacterType)  //TODO: fallout if !selectedCharacter
+    : getUnitStats(ALL_STATS[unit.class], unit.equipment)
 
   const handleTileClick = (pos: Position) => {
     if (isAttacking && isValidTarget(pos, validTargets) && isPieceAnEnemy(pos, gameState, activePlayer)) {
@@ -73,12 +94,12 @@ const useDungeonEngine = (): DungeonEngine => {
     } else if (isInteracting && isValidTarget(pos, validTargets) && isPieceAnObject(pos, gameState)) {
       handleInteract(pos);
     } else {
-      setselectedTile({row: pos.row, col: pos.col});
+      setSelectedTile({row: pos.row, col: pos.col});
     }
   }
 
   const handleAction = (action: ActionType) => {
-    setselectedTile(null)
+    setSelectedTile(null)
     if (action === 'interact') setIsInteracting(true)
       else if (action === 'attack') setIsAttacking(true)
   }
@@ -88,41 +109,49 @@ const useDungeonEngine = (): DungeonEngine => {
     setIsAttacking(false);
   }
 
+  const addFloatingText = useCallback((text: Omit<FloatingTextT, 'id'>) => {    
+    setFloatingTexts((prev) => [ ...prev, { ...text, id: crypto.randomUUID()}])
+  }, [])
+
+  const removeFloatingText = useCallback((id: string) => {
+    setFloatingTexts((prev) => prev.filter(item => item.id !== id))
+  }, [])
+
   const handleAttack = (pos: Position) => {
     const targetUnitId = getUnitId(pos, gameState);
     if (!targetUnitId) {
       console.error('==> No Target Unit');
       return;
     }
+
     const targetUnit = gameState.units[targetUnitId]
-    const attackerStats = activePlayer.type === 'player' 
-      ? getPlayerUnitStats(selectedCharacter as CharacterType)  //TODO: fallout if !selectedCharacter
-      : getUnitStats(ALL_STATS[activePlayer.class])
-    const targetStats = targetUnit.type === 'player' 
-      ? getPlayerUnitStats(selectedCharacter as CharacterType)
-      : getUnitStats(ALL_STATS[targetUnit.class])
+    const attackerStats = getPlayerStats(activePlayer)
+    const targetStats = getPlayerStats(targetUnit)
 
     const baseDamage = attackerStats.baseDmg + randomNumber(1, attackerStats.dmgDice);
 
-    const criticalHit = Math.random() <= (attackerStats.critChance || 0);
-    const blocked = Math.random() <= (targetStats.blockChance || 0);
-    const evaded = Math.random() <= (targetStats.evadeChance || 0);
+    const criticalHit = rollChance(attackerStats.critChance);
+    const blocked = rollChance(targetStats.blockChance);
+    const evaded = rollChance(targetStats.evadeChance);
 
     let attackDmg = criticalHit ? baseDamage * 1.5 : baseDamage
     if (blocked) { attackDmg = attackDmg * 0.5 }
+    if (targetStats.armor) { attackDmg -= targetStats.armor}
 
     // STATUS CHANGE
     const targetStatus: UnitStatus[] = []
-
-    if (attackerStats.stunChance) {
-      if (Math.random() <= attackerStats.stunChance) { targetStatus.push('stunned') }
-    }
-    if (attackerStats.stunChance) {
-      if (Math.random() <= attackerStats.stunChance) { targetStatus.push('bleeding') }
-    }
+    if (rollChance(attackerStats.stunChance)) { targetStatus.push('stunned') }
+    if (rollChance(attackerStats.bleedChance)) { targetStatus.push('bleeding') }
 
     // TARGET IS DEAD?
-    const remainingHp = evaded ? 0 : targetUnit.currentHp - attackDmg
+    let remainingMs = 0
+    if (targetUnit.currentMS) {
+      remainingMs = Math.max(targetUnit.currentMS - attackDmg, 0)
+      attackDmg = Math.max(attackDmg - targetUnit.currentMS, 0)
+      targetUnit.currentMS = remainingMs
+    }
+    const remainingHp = evaded ? targetUnit.currentHp : targetUnit.currentHp - attackDmg
+    
     const { [targetUnitId]: removed, ...remainingUnits } = gameState.units
     const newUnitList = remainingHp <= 0 ? remainingUnits : {
       ...gameState.units,
@@ -147,6 +176,10 @@ const useDungeonEngine = (): DungeonEngine => {
 
     if (evaded) { attackLog = `EVADED! ${targetUnit.name} dodged ${activePlayer.name}'s attack` }
     sendMessage(attackLog, specialLog ? 'warning' : 'info');
+
+    const floatingTextType: FloatingTextType = 
+      evaded ? 'miss' : (criticalHit ? 'critical' : (blocked ? 'block' : 'damage'))
+    addFloatingText({ type: floatingTextType, value: attackDmg, position: targetUnit.position })
 
     const newGameState = {
       ...gameState,
@@ -189,9 +222,9 @@ const useDungeonEngine = (): DungeonEngine => {
       objects: remainingObjects
     }
 
-    const goldAmount = randomNumber(1, 10) + 4;
-    selectedCharacter && addGoldToCharacter(selectedCharacter?.id, goldAmount) // add async?
-    sendMessage(`You found ${goldAmount} gold in the Chest`, 'info');
+    if (targetObject && targetObject.type === 'chest') {
+      generateChestLoot(targetObject)
+    }
 
     checkDungeonComplete(newGameState)
     setBoard(newBoard);
@@ -221,35 +254,108 @@ const useDungeonEngine = (): DungeonEngine => {
     }
   }
 
-  const getTargetsInRange = ({ row, col }: Position, player: number) => {
-    // const attackRange = 1;  // temporal value
-    // const interactRange = 1;
-    const directions = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]];
-    const filteredDirections = directions.filter(([dirRow, dirCol]) => {
-      return isInBounds({ row: row + dirRow, col: col + dirCol}, DUNGEON_SIZE[dungeonSize])
-    })
-    const unitRange: Position[] = filteredDirections.map(([dirRow, dirCol]) => {
-      return {
-         row: row + dirRow,
-         col: col + dirCol,
-      };
-    })
+  const getFilteredDirections = (pos: Position) => DIRECTIONS.filter(([dirRow, dirCol]) => (
+    isInBounds({ row: pos.row + dirRow, col: pos.col + dirCol}, DUNGEON_SIZE[dungeonSize])
+  ))
 
+  const getUnitAttackRange = ({ row, col }: Position, player: number) => {
+    const activeUnit = gameState.units[player]
+    const filteredDirections = getFilteredDirections({ row, col });
     const targets: Position[] = [];
-    const activeUnit = gameState.units[player].type; 
-    const legalTargets: string[] = [];
-    if (activeUnit === 'player' || activeUnit === 'ally') legalTargets.push('enemy', 'chest', 'button');
-    if (activeUnit === 'enemy') legalTargets.push('player', 'ally'); 
-     
-    unitRange.forEach((pos) => {
-      const potencialTarget = board[pos.row][pos.col].content;
-      if (legalTargets.includes(potencialTarget))  {
-        targets.push(pos);
+    const activeUnitStats = getPlayerStats(activeUnit)
+    const legalTargets= getLegalTargets(activeUnit.type, 'enemy');
+    const obstacles = ['chest', 'wall']
+    
+    for (const dir of filteredDirections) {
+      const [ dirRow, dirCol ] = dir;
+      let newRow = row + dirRow
+      let newCol = col + dirCol
+      let rangeLimit = 1
+      
+      while (isInBounds({row: newRow, col: newCol}, DUNGEON_SIZE[dungeonSize]) && rangeLimit <= activeUnitStats.range) {
+        const tile = board[newRow][newCol]
+        if (tile) {
+          if (obstacles.includes(tile.content)) break;
+          if (legalTargets.includes(tile.content)) {
+            targets.push({ row: newRow, col: newCol });
+            break;
+          }
+        }
+        targets.push({ row: newRow, col: newCol });
+        newRow += dirRow;
+        newCol += dirCol;
+        rangeLimit++;
       }
-    })
-
+    }
     return targets;
   };
+
+  const getTargetsInRange = (pos: Position, player: number, targetType: 'enemy' | 'object') => {
+    const activeUnit = gameState.units[player]
+    const filteredDirections = getFilteredDirections(pos);
+    const targets: Position[] = [];
+    const activeUnitStats = getPlayerStats(activeUnit)
+    const unitRange = targetType === 'enemy' ? activeUnitStats.range : 1
+    const legalTargets = getLegalTargets(activeUnit.type, targetType)
+    const obstacles = targetType === 'enemy' ? ['chest', 'wall'] : []
+    
+    for (const dir of filteredDirections) {
+      for (let distance = 1; distance <= unitRange; distance++) {
+        const position = getPositionInDirection(pos, dir, distance);
+        if (!isInBounds(position, DUNGEON_SIZE[dungeonSize])) { break; }
+
+        const tile = board[position.row][position.col]
+        if (tile) {
+          if (obstacles.includes(tile.content)) { break; }
+          if (legalTargets.includes(tile.content)) {
+            targets.push(position);
+          }
+        }
+      }
+    }
+    return targets;
+  }
+
+  const getValidTargets = (pos: Position, player: number) => ([
+    ...getTargetsInRange(pos, player, 'enemy'),
+    ...getTargetsInRange(pos, player, 'object'),
+  ]);
+
+  const showAttackRange = (show: boolean) => {
+    const currentPlayer = gameState.currentPlayer;
+    const currentPosition = gameState.units[currentPlayer]?.position;
+    const targets = show 
+      ? getUnitAttackRange(currentPosition, currentPlayer)
+      : getValidTargets(currentPosition, currentPlayer)
+    setValidTargets(targets);
+  }
+
+  const generateChestLoot = (targetObject: UsableObject) => {
+      const lootTable = CHEST_LOOT_TABLE[targetObject.chestTier || 'chest0']
+      if (selectedCharacter && lootTable.goldChance) {
+        const { goldBase, goldDice } = lootTable.goldChance;
+        const goldAmount =  goldBase + randomNumber(1, goldDice)
+        addGoldToCharacter(selectedCharacter?.id, goldAmount)
+        sendMessage(`You found ${goldAmount} gold in the Chest`, 'info');
+      }
+      if (selectedCharacter && lootTable.itemChance) {
+        const { chance, itemPool, magicChance, tier } = lootTable.itemChance
+        if (rollChance(chance)) {
+          const allItems = Object.entries(ITEM_STATS)
+          const itemType = selectRandomItem(itemPool)
+          const isMagic = rollChance(magicChance)
+          const elligibleItems = allItems.filter(item => {
+            return item[1].tier === tier && item[1].itemClass === itemType
+          })
+          const chosenItem = selectRandomItem(elligibleItems)
+          const itemId = chosenItem[0]
+
+          console.log('==> LOOT:', itemId, isMagic && 'magic', selectedCharacter);
+          addItemToInventory(selectedCharacter.id, itemId, selectedCharacter.inventory || [])
+          sendMessage(`You found a ${chosenItem[1].name} in the Chest`, 'info');
+        }
+      }
+  }
 
   const finishTurn = useCallback(() => {
     const unitsIds = Object.keys(gameState.units);
@@ -257,8 +363,8 @@ const useDungeonEngine = (): DungeonEngine => {
     let next = Number(unitsIds[(currentId+1) % unitsIds.length]);
 
     const nextUnit = gameState.units[next];
-    const targets = getTargetsInRange(nextUnit.position, next);
-    const nextUnitStats = ALL_STATS[nextUnit.class]
+    const targets = getValidTargets(nextUnit.position, next);
+    const nextUnitStats = getPlayerStats(nextUnit)
     const newGameState = {
       ...gameState,
       currentPlayer: next,
@@ -266,6 +372,8 @@ const useDungeonEngine = (): DungeonEngine => {
       attacksLeft: nextUnitStats.attackCount,
       bonusActionsLeft: nextUnitStats.bonusActions || 1,
     }
+
+    if (nextUnitStats.magicShield) { gameState.units[next].currentMS = nextUnitStats.magicShield  }
     if (nextUnit.type === 'enemy' || nextUnit.type === 'ally') {
       newGameState.bonusActionsLeft = 0;
     }
@@ -279,10 +387,12 @@ const useDungeonEngine = (): DungeonEngine => {
 
   const movePlayer = useCallback((pos: Position) => {
     const currentPlayer = gameState.currentPlayer;
-    const currentPosition = gameState.units[currentPlayer].position;
+    const activeUnit = gameState.units[currentPlayer]
+    const currentPosition = activeUnit?.position;
+    const activeUnitStats = getPlayerStats(activeUnit)
 
-    const unitStatus = gameState.units[currentPlayer].status
-    const isBleeding = unitStatus.indexOf('bleeding') > -1
+    const unitStatus = activeUnit?.status
+    const isBleeding = unitStatus?.indexOf('bleeding') > -1
     
     const newBoard = board.map(r => [...r]);
     const newPosition: Position = {
@@ -290,13 +400,30 @@ const useDungeonEngine = (): DungeonEngine => {
       col: clamp(currentPosition.col + pos.col, 0, DUNGEON_SIZE[dungeonSize]-1),
     }
 
+    let damageTaken = 0;
+    if (board[newPosition.row][newPosition.col].decal === 'spikes') {
+      damageTaken = 2 - (activeUnitStats.hazardProtection || 0)
+      sendMessage(`${activeUnit.name} stepped on a trap an took ${damageTaken} damage`, 'warning')
+      addFloatingText({ type: 'damage', value: damageTaken, position: newPosition })
+    }
+    if (isBleeding) { damageTaken += 1 }
+            
+    let remainingMs = 0
+    if (activeUnit.currentMS) {
+      remainingMs = Math.max(activeUnit.currentMS - damageTaken, 0)
+      damageTaken = Math.max(damageTaken - activeUnit.currentMS, 0)
+      activeUnit.currentMS = remainingMs
+    }
+    const remainingHp = activeUnit.currentHp - damageTaken
+    
+    const { [currentPlayer]: removed, ...remainingUnits } = gameState.units
     const tempPosition = board[newPosition.row][newPosition.col] 
     const isOccupied = tempPosition.content !== 'empty'
     const isWalkable = tempPosition.terrain !== 'water'
     const isStunned = unitStatus.indexOf('stunned') > -1
     if (isOccupied || !isWalkable || isStunned) return
     
-    const targets = getTargetsInRange(newPosition, currentPlayer);
+    const targets = getValidTargets(newPosition, currentPlayer);
 
     newBoard[currentPosition.row][currentPosition.col] = {
       ...board[currentPosition.row][currentPosition.col],
@@ -314,16 +441,14 @@ const useDungeonEngine = (): DungeonEngine => {
     setGameState({
       ...gameState,
       movesLeft: gameState.movesLeft - 1,
-      units: {
+      units: remainingHp > 0 ? {
         ...gameState.units,
         [currentPlayer]: {
-          ...gameState.units[currentPlayer],
+          ...activeUnit,
           position: newPosition,
-          currentHp: isBleeding 
-            ? gameState.units[currentPlayer].currentHp - 1 
-            : gameState.units[currentPlayer].currentHp
+          currentHp: remainingHp,
         }
-      },
+      } : remainingUnits,
     })
   }, [gameState])
 
@@ -379,7 +504,10 @@ const useDungeonEngine = (): DungeonEngine => {
     handleTileClick,
     validTargets,
     boardRef,
-    messages
+    messages,
+    floatingTexts,
+    removeFloatingText,
+    showAttackRange,
   };
 } 
 

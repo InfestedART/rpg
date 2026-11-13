@@ -1,6 +1,10 @@
 import type { Board, GameState, Position } from "@/types/dungeon.types";
 import { getObjectId, getUnitId, isPieceAnObject, isPieceAUnit } from "@/utils/dungeon.utils";
 import UnitStats from "../UnitStats";
+import './TileInfo.css'
+import Tile from "../Tile/Tile";
+import { getPieceIcon } from "@/utils/board.utils";
+import { useCharacterStore } from "@/store/characterStore";
 
 type TileInfoProps = {
   selectedTile: Position
@@ -35,21 +39,33 @@ const UnitInfo = ({ tilePosition, gameState }: PieceInfoProps) => {
 }
 
 const TileInfo = ({ selectedTile, gameState, board }: TileInfoProps ) => {  
+  const { selectedCharacter } = useCharacterStore();
+  if (!selectedCharacter) return;
   const tile = board[selectedTile.row][selectedTile.col];
   const isTileEmpty = tile.content === 'empty';
+  const icon = getPieceIcon(tile, selectedTile, gameState, selectedCharacter)
 
   return (
-    <div>
-      <div className="terrain-info mb-5">
-        <div>Position: {selectedTile.row}, {selectedTile.col}</div>
-        <div>Terrain: {tile.terrain}</div>
+    <div className="terrain-info">
+
+      <div className="flex flex-row">
+        <div className="tile-container">
+          <Tile terrain={tile.terrain} status="" piece={tile.content} icon={icon} />
+        </div>
+        <div className="flex flex-col pt-2">
+          <div>Position: {selectedTile.row}, {selectedTile.col}</div>
+          <div>Terrain: {tile.terrain}</div>
+        </div>
       </div>
-      {!isTileEmpty && isPieceAnObject(selectedTile, gameState) && (
-        <ObjectInfo tilePosition={selectedTile} gameState={gameState} />
-      )}
-      {!isTileEmpty && isPieceAUnit(selectedTile, gameState) && (
-        <UnitInfo tilePosition={selectedTile} gameState={gameState} />
-      )}
+      
+      <div>
+        {!isTileEmpty && isPieceAnObject(selectedTile, gameState) && (
+          <ObjectInfo tilePosition={selectedTile} gameState={gameState} />
+        )}
+        {!isTileEmpty && isPieceAUnit(selectedTile, gameState) && (
+          <UnitInfo tilePosition={selectedTile} gameState={gameState} />
+        )}
+      </div>
     </div>
   )
 }

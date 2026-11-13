@@ -25,3 +25,12 @@ export function selectRandomItem<T>(itemPool: T[]): T {
   return itemPool[Math.floor(Math.random() * itemPool.length)];
 }
 
+export function rollChance(chance?: number): boolean {
+  return chance !== undefined && Math.random() <= chance;
+}
+
+export function removeFromArray<T>(array: T[], value: T): T[] {
+  const index = array.indexOf(value);
+  if (index !== -1) {array.splice(index, 1) }
+  return array;
+}

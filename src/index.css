@@ -46,6 +46,16 @@ h1 {
   line-height: 1.1;
 }
 
+@theme {
+  --animate-float-up: float-up 1s ease-out forwards;
+
+  @keyframes float-up {
+    0%   { opacity: 0; transform: translateY(0) scale(0.8); }
+    15%  { opacity: 1; transform: translateY(-8px) scale(1.1); }
+    100% { opacity: 0; transform: translateY(-48px) scale(1); }
+  }
+}
+
 /* 
 
 a {

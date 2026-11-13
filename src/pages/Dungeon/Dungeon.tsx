@@ -1,19 +1,22 @@
 import { useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 
+import { getEnemiesInRange, getObjectsInRange } from '@/utils/dungeon.utils';
+import { getPieceIcon } from '@/utils/board.utils';
 import { useCharacterStore } from '@/store/characterStore';
 import useDungeonEngine from './useDungeonEngine';
 
 import Button from '@/components/Button';
 import Sidebar from '@/components/Layout/Sidebar';
+import SidebarSection from '@/components/Layout/Sidebar/SidebarSection';
+import Hover from '@/components/Hover';
+
 import UnitStats from './UnitStats';
 import TileInfo from './TileInfo';
 import Tile from './Tile';
+import MessageBox from './MessageBox';
 
 import './Dungeon.css';
-import { getEnemiesInRange, getObjectsInRange } from '@/utils/dungeon.utils';
-import MessageBox from './MessageBox';
-import SidebarSection from '@/components/Layout/Sidebar/SidebarSection';
 
 const Dungeon = () => {
   const navigate = useNavigate();
@@ -29,20 +32,30 @@ const Dungeon = () => {
     isInteracting,
     isAttacking,
     handleTileClick,
-    messages
+    messages,
+    floatingTexts,
+    removeFloatingText,
+    showAttackRange,
   } = useDungeonEngine();
   const { selectedCharacter } = useCharacterStore();
   if (!selectedCharacter) return null;
 
   const activePlayer = gameState.units[gameState.currentPlayer];
-  const playerIsHuman = activePlayer.type === 'player'|| activePlayer.type === 'ally'
+  const playerIsHuman = activePlayer && (activePlayer.type === 'player'|| activePlayer.type === 'ally')
   const objectsInRange = getObjectsInRange(gameState, validTargets)
   const enemiesInRange = getEnemiesInRange(activePlayer, gameState, validTargets);
 
-  const interactAction = () => isInteracting ? cancelAction() : handleAction('interact');
-  const attackAction = () => isAttacking ? cancelAction() : handleAction('attack');
+  const handleInteract = () => isInteracting ? cancelAction() : handleAction('interact');
+  const handleAttack = () => isAttacking ? cancelAction() : handleAction('attack');
 
+  // const interactDisabled = objectsInRange < 1 && (isAttacking || gameState.bonusActionsLeft < 1)
+  const attackDisabled = enemiesInRange < 1 
+    || isInteracting 
+    || gameState.attacksLeft < 1 
+    || activePlayer.status.indexOf('stunned') > 0
+  
   // console.log('==> gameState', gameState)
+  // console.log('==> Board', board)
 
   return (
     <div className='main-game'>
@@ -53,7 +66,7 @@ const Dungeon = () => {
       <Sidebar side='left' isOpen={true} title='ACTIONS'>
         <div className='dungeon-sidebar'>
           <SidebarSection title="PLAYER INFO">
-            <UnitStats unit={activePlayer} gameState={gameState} isActive={true} />
+            { activePlayer && (<UnitStats unit={activePlayer} gameState={gameState} isActive={true} />) }
           </SidebarSection>
           <SidebarSection title="ACTIONS">
             {objectsInRange > 0 && (
@@ -62,22 +75,30 @@ const Dungeon = () => {
                 disabled={isAttacking || gameState.bonusActionsLeft < 1}
                 className='mt-2'
                 size='md'
-                onClick={() => interactAction()}
+                onClick={() => handleInteract()}
               >
                 {isInteracting ? '[C]ancel Action' : 'Us[E] Object'}
               </Button>
             )}
-            {enemiesInRange > 0 && (
+            <Hover
+              onHoverStart={() => showAttackRange(true)}
+              onHoverEnd={() => showAttackRange(false)}
+              enabled={!isAttacking}
+            >
               <Button
                 variant='secondary'
-                disabled={isInteracting || gameState.attacksLeft < 1 || activePlayer.status.indexOf('stunned') > 0}
-                className='mt-2'
+                disabled={attackDisabled}
+                className='mt-2 w-full'
                 size='md'
-                onClick={() => attackAction()}
+                onClick={() => {
+                  showAttackRange(false)
+                  handleAttack()
+                }}
                 >
                 {isAttacking ? '[C]ancel Attack' : '[A]ttack'}
-              </Button>
-            )}   
+              </Button> 
+            </Hover>
+            
             <Button variant='secondary' className='mt-2' size='md' onClick={finishTurn}>
               Finish [T]urn
             </Button>
@@ -99,33 +120,52 @@ const Dungeon = () => {
               {board.map((row, rowIndex) => (
                 <div key={rowIndex} className='flex'>
                   {row.map((col, colIndex) => {
-                    const currentPlayerPosition = gameState.units[gameState.currentPlayer].position;
-                    const isActive = currentPlayerPosition.col === colIndex && currentPlayerPosition.row === rowIndex;
-                    const isSelected = selectedTile?.row === rowIndex && selectedTile.col === colIndex;
+                    const currentPlayerPosition = activePlayer?.position;
+                    const isActive = currentPlayerPosition?.col === colIndex && currentPlayerPosition?.row === rowIndex;
+                    const isSelected = selectedTile?.row === rowIndex && selectedTile?.col === colIndex;
                     const inRange = validTargets.some(target => target.row === rowIndex && target.col === colIndex);
 
-                    const canInteract = isInteracting && (col.content === 'button' || col.content === 'chest');
+                    const canInteract = isInteracting && col.content === 'chest';
                     const canAttack = isAttacking && (
                       playerIsHuman ? col.content === 'enemy' : (col.content === 'player' || col.content === 'ally')
                     )
-                    const isValid = canInteract || canAttack;
+                    const isTargetValid = canInteract || canAttack;
 
                     const cls = clsx({
                       active: isActive,
                       selected: isSelected,
                       ['in-range']: inRange,
-                      valid: inRange && isValid,
+                      valid: inRange && isTargetValid,
                     },
                       col.content
                     )
+
+                    const fText = floatingTexts.length > 0 ? floatingTexts.find(text => (
+                        text.position.col === colIndex && text.position.row === rowIndex
+                      )) : undefined
+                    
                     return (
-                      <Tile 
+                      <Hover
+                        enabled={isActive}
+                        onHoverStart={() => showAttackRange(true)}
+                        onHoverEnd={() => showAttackRange(false)}
                         key={`tile_${rowIndex}_${colIndex}`}
-                        terrain={col.terrain}
-                        piece={col.content}
-                        status={cls}
-                        onClick={() => handleTileClick({ row: rowIndex, col: colIndex })}
-                      />
+                      >
+                        <Tile 
+                          terrain={col.terrain}
+                          piece={col.content}
+                          icon={getPieceIcon(
+                            col,
+                            { row: rowIndex, col: colIndex },
+                            gameState,
+                            selectedCharacter
+                          )}
+                          status={cls}
+                          onClick={() => handleTileClick({ row: rowIndex, col: colIndex })}
+                          floatingText={fText}
+                          removeFloatingText={removeFloatingText}
+                        />
+                      </Hover>
                     )
                   })}
                 </div>
